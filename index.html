@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>온기 순찰대</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--surface:#FFFFFF;--ink:#1B2430;--sub:#4E5968;--label:#5B6573;--line:#DDE2E8;--line2:#EDF0F3;--field:#C9D0D8;--soft:#F4F6F8;--track:#EEF1F4;--gauge:#4E5968;
+  --blue:#1F5FAF;--blue-t:#E7EEF8;--orange:#9A4308;--orange-t:#FBEEE4;--violet:#4B3A78;--violet-t:#ECE8F4;
+  --btn:#1B2430;--btn-ink:#FFFFFF;--btn2:#EEF1F4;
+  --land:#EEF1EC;--sea:#DCE7F2;--road:#FFFFFF;--road-edge:#D3D9DF;--contour:#DCE3D6;--city:#E2E6EA;--sea-ink:#3F5F80;--halo:#FFFFFF;
+  --shadow:rgba(27,36,48,.16);--scrim:rgba(15,20,26,.42);
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141A;--surface:#1A2129;--ink:#E7ECF2;--sub:#A9B3C0;--label:#9AA5B2;--line:#2B343F;--line2:#232B35;--field:#3A4450;--soft:#222A34;--track:#2B343F;--gauge:#A9B3C0;
+    --blue:#8DB8F2;--blue-t:#1C2B40;--orange:#F2B07A;--orange-t:#3A2818;--violet:#C2B2EE;--violet-t:#2B2442;
+    --btn:#E7ECF2;--btn-ink:#0F141A;--btn2:#26303B;
+    --land:#1C232B;--sea:#16263A;--road:#2E3742;--road-edge:#252D37;--contour:#252E38;--city:#26303B;--sea-ink:#8FB0D6;--halo:#1C232B;
+    --shadow:rgba(0,0,0,.5);--scrim:rgba(0,0,0,.6);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141A;--surface:#1A2129;--ink:#E7ECF2;--sub:#A9B3C0;--label:#9AA5B2;--line:#2B343F;--line2:#232B35;--field:#3A4450;--soft:#222A34;--track:#2B343F;--gauge:#A9B3C0;
+  --blue:#8DB8F2;--blue-t:#1C2B40;--orange:#F2B07A;--orange-t:#3A2818;--violet:#C2B2EE;--violet-t:#2B2442;
+  --btn:#E7ECF2;--btn-ink:#0F141A;--btn2:#26303B;
+  --land:#1C232B;--sea:#16263A;--road:#2E3742;--road-edge:#252D37;--contour:#252E38;--city:#26303B;--sea-ink:#8FB0D6;--halo:#1C232B;
+  --shadow:rgba(0,0,0,.5);--scrim:rgba(0,0,0,.6);color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;word-break:keep-all;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:8px}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.app.wide{max-width:1120px}
+.app.notab{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.hdr{padding:12px 20px 16px;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;min-height:44px;gap:8px}
+.word{font-size:15px;font-weight:700}
+.tag{font-size:12px;line-height:16px;color:var(--sub);border:1px solid var(--field);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap}
+.iconbtn{width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;position:relative;padding:0;border-radius:12px;color:var(--ink)}
+.badge{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:4px;background:#B85A14}
+h1{margin:0;font-size:26px;line-height:34px;font-weight:700}
+h2{margin:0}
+.sub{margin:0;font-size:14px;line-height:21px;color:var(--sub)}
+.tiles{padding:0 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--line)}
+.tile.on{background:var(--t);border-color:var(--t)}
+.tile .n{display:flex;align-items:center;gap:6px;color:var(--c)}
+.tile .num{font-size:24px;line-height:30px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.tile .lb{font-size:13px;line-height:18px;font-weight:600;color:var(--c)}
+.t-blue{--c:var(--blue);--t:var(--blue-t)}.t-orange{--c:var(--orange);--t:var(--orange-t)}.t-violet{--c:var(--violet);--t:var(--violet-t)}
+.sect{display:flex;align-items:baseline;justify-content:space-between;padding:0 20px;margin:20px 0 8px;gap:8px}
+.sect h2{font-size:16px;line-height:24px;font-weight:600}
+.sect span{font-size:13px;color:var(--sub)}
+.stack{padding:0 16px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;background:var(--t);color:var(--c);font-size:13px;line-height:18px;font-weight:600;align-self:flex-start}
+.chip.plain{background:var(--soft);color:var(--sub)}
+.between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.muted{font-size:13px;line-height:19px;color:var(--sub)}
+.txt{margin:0;font-size:15px;line-height:22px}
+.namebtn{flex:1;min-width:0;min-height:44px;display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;text-align:left;color:var(--ink)}
+.who{display:flex;flex-direction:column;min-width:0}
+.who b{font-size:17px;line-height:24px;font-weight:600}
+.who span{font-size:13px;line-height:18px;color:var(--sub)}
+.callbtn{width:44px;height:44px;flex:none;border:0;border-radius:12px;background:var(--btn);color:var(--btn-ink);display:flex;align-items:center;justify-content:center;padding:0}
+.cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.cell{background:var(--soft);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cell.hot{background:var(--t)}
+.cell small{font-size:12px;line-height:16px;color:var(--label)}
+.cell.hot small{color:var(--sub)}
+.cell strong{font-size:15px;line-height:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.cell.hot strong{color:var(--c)}
+.acts{display:flex;gap:8px}
+.btn{flex:1;min-height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;border:0;padding:0 12px;text-align:center}
+.btn.pri{background:var(--btn);color:var(--btn-ink)}
+.btn.sec{background:var(--surface);border:1px solid var(--field);color:var(--ink)}
+.btn.big{min-height:52px;font-size:16px;border-radius:14px}
+.note{margin:0;font-size:13px;line-height:19px;color:var(--blue);font-weight:500}
+.list{margin:0 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:0;border-top:1px solid var(--line2);background:transparent;width:100%;text-align:left;min-height:64px;color:var(--ink)}
+.row:first-child{border-top:0}
+.row .who b{font-size:16px;line-height:22px}
+.sig{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;flex:none;font-variant-numeric:tabular-nums}
+.sig span{display:flex;align-items:center;gap:4px}
+.sig .dim{color:var(--label)}
+.empty{margin:0 16px;padding:20px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-size:15px;line-height:22px;color:var(--sub)}
+.bar{height:56px;padding:6px 8px 0;display:flex;align-items:center;gap:4px}
+.bar span{font-size:15px;font-weight:500;color:var(--sub)}
+.bar h1{font-size:17px;line-height:24px;font-weight:600}
+.page{padding:4px 16px 24px;display:flex;flex-direction:column;gap:16px}
+.verdict{background:var(--t);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.verdict.ok{background:var(--surface);border:1px solid var(--line)}
+.verdict .chip{background:var(--surface)}
+.verdict h2{font-size:22px;line-height:30px;font-weight:700}
+.sigbox{background:var(--surface);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.verdict.ok .sigbox{background:var(--soft)}
+.sigbox small{font-size:12px;line-height:16px;color:var(--label)}
+.sigbox strong{font-size:15px;line-height:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.sigbox.hot strong,.sigbox.hot svg{color:var(--c)}
+.sigbox svg{color:var(--sub)}
+.legend{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--sub);flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:6px}
+.chart{display:block;width:100%;height:auto}
+.gauge{position:relative;height:14px;border-radius:7px;background:var(--track)}
+.gauge>div{height:100%;border-radius:7px;background:var(--gauge)}
+.gauge>div.low{background:#B85A14}
+.gauge>i{position:absolute;top:-4px;width:2px;height:22px;background:#B85A14}
+.big{font-size:28px;line-height:34px;font-weight:700;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{padding:8px 12px;border-radius:10px;border:1px solid var(--line);font-size:14px;line-height:20px}
+.raw{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.raw li{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:20px}
+.raw li span:first-child{color:var(--sub)}
+.raw li span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+details summary{cursor:pointer;font-size:16px;line-height:24px;font-weight:600;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:24px}
+details summary::-webkit-details-marker{display:none}
+details[open] summary svg{transform:rotate(90deg)}
+fieldset{margin:0;padding:0;border:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+legend{padding:0;margin-bottom:10px;font-size:18px;line-height:26px;font-weight:700}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer}
+.opt.sel{border:2px solid var(--ink);padding:11px}
+.opt input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--ink);flex:none}
+.opt b{display:block;font-size:16px;line-height:22px;font-weight:600}
+.opt span{display:block;font-size:13px;line-height:19px;color:var(--sub)}
+.check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;line-height:22px;cursor:pointer}
+.check input{width:20px;height:20px;margin:0;accent-color:var(--ink);flex:none}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.box h3{margin:0 0 8px;font-size:16px;line-height:24px;font-weight:600}
+textarea{width:100%;min-height:88px;resize:vertical;padding:12px;border:1px solid var(--field);border-radius:12px;background:var(--surface);font-size:15px;line-height:22px}
+label.lbl{font-size:14px;line-height:20px;font-weight:600}
+.timeline{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.timeline li{display:flex;gap:12px}
+.timeline .rail{width:12px;flex:none;display:flex;flex-direction:column;align-items:center}
+.timeline .rail i{width:10px;height:10px;border-radius:5px;background:var(--ink);margin-top:5px;flex:none}
+.timeline .rail i.a{background:#2A66B8}
+.timeline .rail em{width:2px;flex:1;background:var(--line);margin-top:4px}
+.timeline .body{display:flex;flex-direction:column;gap:4px;padding-bottom:18px}
+.timeline li:last-child .body{padding-bottom:0}
+.timeline time{font-size:13px;line-height:20px;font-weight:600;color:var(--sub)}
+.timeline p{margin:0;font-size:15px;line-height:22px}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.duo .cell{padding:16px;border-radius:16px;gap:4px}
+.duo .cell b{font-size:20px;line-height:28px;font-weight:700}
+.duo .cell.hot b{color:var(--c)}
+.mapwrap{margin:0 16px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--land)}
+.mapwrap svg{display:block;width:100%;height:auto}
+.pin{cursor:pointer}
+.pin:focus-visible{outline:none}
+.pin:focus-visible circle.ring{stroke:var(--ink);stroke-width:3}
+.tabbar{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));z-index:20}
+.tabbar[hidden]{display:none}
+.tabbar button{height:62px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:500;color:var(--label);padding:0}
+.tabbar button[aria-current="page"]{color:var(--ink);font-weight:600}
+.fab{position:fixed;z-index:25;right:max(16px,calc(50% - 224px));bottom:calc(76px + env(safe-area-inset-bottom,0px));height:48px;padding:0 16px 0 14px;border-radius:24px;border:0;background:var(--btn);color:var(--btn-ink);display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;box-shadow:0 8px 20px var(--shadow)}
+.fab[hidden]{display:none}
+.fab.low{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.banner{position:fixed;top:0;left:0;right:0;max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 8px) 8px 0;z-index:40;transform:translateY(-130%);transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.banner.show{transform:none;pointer-events:auto}
+.bcard{background:var(--surface);border-radius:24px;padding:14px;box-shadow:0 12px 32px var(--shadow),0 0 0 1px var(--line);display:flex;flex-direction:column;gap:12px}
+.bn{display:flex;gap:12px}
+.appicon{width:40px;height:40px;border-radius:11px;background:#1B2430;flex:none;display:flex;align-items:center;justify-content:center;position:relative}
+.appicon i{position:absolute;left:17px;top:20px;width:6px;height:6px;border-radius:3px;background:#F0A65E}
+.bt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.meta{display:flex;justify-content:space-between;font-size:13px;line-height:18px}
+.meta b{font-weight:600}.meta span{color:var(--label)}
+.bt .t{font-size:15px;line-height:22px;font-weight:600}
+.bt .b{font-size:14px;line-height:20px;color:var(--sub)}
+.bacts{display:flex;gap:8px}
+.bacts button{flex:1;min-height:44px;border-radius:12px;background:var(--btn2);border:0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;color:var(--ink)}
+.ffpill{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translate(-50%,-200%);z-index:35;background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;transition:transform .25s;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ffpill.show{transform:translate(-50%,0)}
+.toast{position:fixed;left:50%;bottom:calc(136px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:45;background:var(--btn);color:var(--btn-ink);padding:12px 16px;border-radius:14px;font-size:14px;line-height:20px;max-width:min(420px,calc(100% - 32px));transition:opacity .2s,transform .2s;pointer-events:none;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.sheet-wrap{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheet-wrap[hidden]{display:none}
+.sheet{width:100%;max-width:480px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
+.grab{align-self:center;width:36px;height:4px;border-radius:2px;background:var(--field)}
+.sheet h2{font-size:20px;line-height:28px;font-weight:700}
+.sheet .grp{display:flex;flex-direction:column;gap:8px}
+.sheet .grp>b{font-size:14px;line-height:20px;font-weight:600}
+.scen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.scen button{min-height:84px;border-radius:14px;border:0;background:var(--t);color:var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:14px;line-height:19px;font-weight:600;padding:8px}
+select{min-height:48px;border-radius:12px;border:1px solid var(--field);background:var(--surface);padding:0 12px;font-size:15px;width:100%}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--btn2);border-radius:12px;padding:4px;gap:4px}
+.seg button{min-height:40px;border:0;border-radius:9px;background:transparent;font-size:14px;font-weight:600;color:var(--sub)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px var(--shadow)}
+.clock{font-size:14px;line-height:20px;color:var(--sub);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;padding:0 16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.kpi h2{font-size:14px;line-height:20px;font-weight:600;color:var(--sub)}
+.kpi .v{font-size:30px;line-height:38px;font-weight:700;font-variant-numeric:tabular-nums}
+.stackbar{display:flex;gap:3px;height:20px}
+.stackbar span{border-radius:4px}
+.tbl-box{margin:0 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;min-width:760px;border-collapse:collapse;font-size:15px;line-height:22px;font-variant-numeric:tabular-nums}
+th,td{padding:12px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:middle}
+thead th{background:var(--soft);font-size:13px;font-weight:600;color:var(--sub);border-bottom:0}
+td.r,th.r{text-align:right}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+.mini{display:flex;gap:2px}
+.mini span{height:12px;border-radius:3px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.coach{position:fixed;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;padding:0 12px;z-index:30;pointer-events:none}
+.coach.low{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.coach[hidden],.coach-scrim[hidden]{display:none}
+.coach .cc{pointer-events:auto;background:var(--surface);border-radius:20px;padding:14px 16px 16px;box-shadow:0 10px 30px var(--shadow),0 0 0 1px var(--line);display:flex;flex-direction:column;gap:8px}
+.coach .step{font-size:13px;font-weight:600;color:var(--blue)}
+.coach h2{font-size:18px;line-height:26px;font-weight:700}
+.coach .skip{min-height:44px;padding:0 4px;border:0;background:transparent;color:var(--sub);font-size:14px;font-weight:500}
+.coach .btn{margin-top:4px}
+.coach-scrim{position:fixed;inset:0;background:var(--scrim);z-index:29}
+.app.touring{padding-bottom:calc(320px + env(safe-area-inset-bottom,0px))}
+.app.touring ~ .toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 16px);transform:translate(-50%,-20px)}
+.app.touring ~ .toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.banner,.ffpill,.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app"><main id="screen"></main></div>
+<nav class="tabbar" id="tabbar" aria-label="주요 메뉴"></nav>
+<button type="button" class="fab" id="fab" data-act="openSim" aria-haspopup="dialog">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+  시연
+</button>
+<div class="banner" id="banner" aria-live="assertive"></div>
+<div class="ffpill" id="ffpill" aria-live="polite"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="sheet-wrap" id="sheet" hidden></div>
+<div class="coach-scrim" id="coachScrim" hidden></div>
+<div class="coach" id="coach" hidden></div>
+
+<script>
+'use strict';
+/* ==============================================================
+   온기 순찰대 시제품
+
+   데이터 흐름
+   [센서 원시값] → ingest() → [가구 상태] → judge() → [알림] → 화면
+
+   지금은 SimulatedSource가 원시값을 만들어 ingest()에 넣어요.
+   실제 센서 허브를 달면 같은 형식의 값을 ingest()에 넣기만 하면
+   판정, 알림, 화면은 그대로 동작해요. (아래 3번 ApiSource 참고)
+
+   센서 허브가 보내는 원시값 형식 (1분에 한 번)
+   {
+     householdId: 0,           // 가구 번호
+     ts: 1799999999999,        // 측정 시각 (ms)
+     tankDistanceCm: 38.2,     // 초음파 센서 → 기름 표면 거리
+     boilerCurrentA: 1.76,     // 보일러 전원선 전류
+     indoorTempC: 19.2,        // 실내 온도
+     indoorHumidity: 42        // 실내 습도
+   }
+   ============================================================== */
+
+/* 1) 판정 기준: 임의로 정한 값이라 실제 데이터로 조정해요 */
+const RULES = {
+  fuelLowPct: 20,        // 잔량이 이보다 낮으면 기름 부족
+  boilerIdleHours: 3,    // 보일러가 이 시간 넘게 연소하지 않고
+  coldIndoorC: 15,       //   실내가 이 온도 이하면 보일러 꺼짐
+  insulShareWindowH: 6,  // 최근 이 시간 동안
+  insulFiringShare: 0.7, //   보일러가 이 비율 이상 돌았는데
+  insulMaxWindowH: 2,    //   최근 이 시간의 실내 최고 온도가
+  insulMaxC: 15          //   이보다 낮으면 단열 의심
+};
+
+/* 2) 센서 원시값을 상태로 바꾸는 기준 (설치할 탱크와 보일러에 맞춰 보정) */
+const SENSOR = {
+  tankHeightCm: 100,  // 탱크 높이 (200L 직육면체 탱크 기준)
+  sensorGapCm: 5,     // 기름이 가득 찼을 때 센서와 기름 표면 사이 거리
+  firingA: 1.0,       // 이 전류 이상이면 버너 연소 중
+  poweredA: 0.15      // 이 전류 이상이면 전원은 켜진 대기 상태
+};
+
+const MIN = 60000, HOUR = 3600000;
+const WORKER = '박*진';
+const STORE_KEY = 'ongi-patrol-v1';
+const START = new Date(2027, 0, 14, 7, 10).getTime();
+
+const TYPES = {
+  boiler_off: { label: '보일러 꺼짐', icon: 'flameOff', cls: 't-blue', prio: 0 },
+  fuel_low:   { label: '기름 부족',   icon: 'dropLow',  cls: 't-orange', prio: 1 },
+  insulation: { label: '단열 의심',   icon: 'wind',     cls: 't-violet', prio: 2 }
+};
+const PIN = { boiler_off: '#2A66B8', fuel_low: '#B85A14', insulation: '#4B3A78' };
+
+const REASONS = {
+  boiler_off: [
+    { id: 'out', b: '외출하셨어요', s: '귀가할 즈음 실내 온도를 다시 봐요', f: ['귀가 후 실내 온도 다시 확인'], g: '외출 중이셨대요. 귀가하신 뒤 실내 온도를 다시 확인할게요.' },
+    { id: 'broken', b: '보일러가 고장 났어요', s: '보일러 수리 업체를 연결해요', f: ['보일러 수리 업체 연결', '수리 전 임시 난방 확인'], g: '보일러가 고장 났대요. 수리 업체를 연결하고 있어요.' },
+    { id: 'cost', b: '난방비가 걱정돼 꺼 두셨어요', s: '에너지바우처 등 지원 제도를 안내해요', f: ['에너지바우처 이용 여부 확인', '등유 가구 추가 지원 안내', '행정복지센터 상담 연결'], g: '난방비가 걱정돼 꺼 두셨대요. 에너지바우처 같은 지원 제도를 안내하기로 했어요.' },
+    { id: 'none', b: '통화가 되지 않아요', s: '보호자에게 연락하고 방문을 요청해요', f: ['보호자에게 연락', '생활지원사 방문 요청'], g: '통화가 되지 않아서 방문을 요청했어요. 보호자님도 연락해 주세요.' }
+  ],
+  fuel_low: [
+    { id: 'forgot', b: '주문을 깜빡하셨어요', s: '주유소 주문을 도와드려요', f: ['단골 주유소 주문 도움'], g: '기름 주문을 깜빡하셨대요. 주유소 주문을 도와드렸어요.' },
+    { id: 'fcost', b: '기름값이 부담돼 미루셨어요', s: '에너지바우처 등 지원 제도를 안내해요', f: ['에너지바우처 이용 여부 확인', '등유 가구 추가 지원 안내'], g: '기름값이 부담돼 미루셨대요. 지원 제도를 안내하기로 했어요.' },
+    { id: 'ordered', b: '이미 주문하셨어요', s: '배달 후 잔량을 다시 봐요', f: ['배달 후 잔량 다시 확인'], g: '이미 기름을 주문하셨대요. 배달 후 잔량을 다시 볼게요.' },
+    { id: 'none', b: '통화가 되지 않아요', s: '보호자에게 연락하고 방문을 요청해요', f: ['보호자에게 연락', '생활지원사 방문 요청'], g: '통화가 되지 않아서 방문을 요청했어요. 보호자님도 연락해 주세요.' }
+  ],
+  insulation: [
+    { id: 'window', b: '창문이 열려 있었어요', s: '닫은 뒤 실내 온도를 다시 봐요', f: ['실내 온도 다시 확인'], g: '창문이 열려 있었대요. 닫으신 뒤 온도를 다시 볼게요.' },
+    { id: 'draft', b: '문틈과 창틈 외풍이 심해요', s: '문풍지 봉사를 연결해요', f: ['문풍지 봉사 연결'], g: '문틈 외풍이 심하대요. 문풍지 봉사를 연결할게요.' },
+    { id: 'insul', b: '집 단열이 부족해요', s: '단열·창호 효율개선 사업을 안내해요', f: ['효율개선 사업 신청 안내', '행정복지센터 상담 연결'], g: '집 단열이 부족한 것 같아요. 효율개선 사업 신청을 안내했어요.' },
+    { id: 'none', b: '통화가 되지 않아요', s: '보호자에게 연락하고 방문을 요청해요', f: ['보호자에게 연락', '생활지원사 방문 요청'], g: '통화가 되지 않아서 방문을 요청했어요. 보호자님도 연락해 주세요.' }
+  ]
+};
+
+/* 지자체 화면의 기존 알림 기록 (예시 데이터). 시연 중 생긴 알림이 여기에 더해져요 */
+const AREA_BASE = {
+  '사천면': { hh: 22, b: 5, f: 4, i: 1 }, '연곡면': { hh: 18, b: 4, f: 3, i: 1 },
+  '성산면': { hh: 16, b: 1, f: 3, i: 1 }, '옥계면': { hh: 14, b: 1, f: 1, i: 3 },
+  '주문진읍': { hh: 20, b: 2, f: 2, i: 1 }, '구정면': { hh: 12, b: 1, f: 1, i: 1 },
+  '왕산면': { hh: 10, b: 1, f: 0, i: 0 }, '강동면': { hh: 16, b: 0, f: 0, i: 0 }
+};
+const AREA_POS = {
+  '주문진읍': [236, 30], '연곡면': [214, 84], '사천면': [238, 152], '성산면': [165, 222],
+  '구정면': [246, 318], '강동면': [298, 352], '옥계면': [320, 398], '왕산면': [112, 322]
+};
+const JITTER = [[0, 0], [15, 10], [-13, 12], [11, -13], [-15, -9], [18, -2]];
+
+const SEED = [
+  ['김*순', 'f', '사천면', '판교리', '딸', '이*영', 69],
+  ['이*자', 'f', '연곡면', '송림리', '아들', '최*호', 52],
+  ['최*덕', 'm', '성산면', '금산리', '딸', '최*정', 38],
+  ['박*옥', 'f', '옥계면', '현내리', '아들', '김*민', 58],
+  ['정*례', 'f', '주문진읍', '교항리', '딸', '정*아', 79],
+  ['홍*분', 'f', '구정면', '여찬리', '아들', '홍*수', 64],
+  ['윤*희', 'f', '사천면', '방동리', '딸', '윤*진', 45],
+  ['장*수', 'm', '연곡면', '행정리', '아들', '장*훈', 71],
+  ['임*녀', 'f', '사천면', '사기막리', '딸', '임*경', 56],
+  ['한*식', 'm', '성산면', '구산리', '아들', '한*규', 49],
+  ['오*선', 'f', '주문진읍', '향호리', '딸', '오*미', 83],
+  ['서*애', 'f', '연곡면', '동덕리', '아들', '서*원', 40],
+  ['신*철', 'm', '사천면', '노동리', '딸', '신*혜', 67],
+  ['권*남', 'm', '구정면', '어단리', '아들', '권*석', 54],
+  ['황*숙', 'f', '강동면', '안인진리', '딸', '황*은', 61],
+  ['안*호', 'm', '성산면', '보광리', '아들', '안*준', 75],
+  ['송*연', 'f', '주문진읍', '장덕리', '딸', '송*희', 46],
+  ['유*금', 'f', '연곡면', '영진리', '아들', '유*태', 59],
+  ['전*길', 'm', '사천면', '석교리', '딸', '전*선', 72],
+  ['조*임', 'f', '옥계면', '금진리', '아들', '조*현', 43],
+  ['강*춘', 'f', '왕산면', '도마리', '딸', '강*숙', 66],
+  ['배*란', 'f', '성산면', '위촌리', '아들', '배*웅', 50],
+  ['문*옥', 'f', '구정면', '학산리', '딸', '문*지', 77],
+  ['남*섭', 'm', '연곡면', '방내리', '아들', '남*우', 63],
+  ['노*희', 'f', '주문진읍', '삼교리', '딸', '노*란', 55],
+  ['양*분', 'f', '사천면', '미노리', '아들', '양*철', 68]
+];
+
+/* ---------- 작은 도구들 ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const r1 = v => Math.round(v * 10) / 10;
+const r2 = v => Math.round(v * 100) / 100;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
+function fmtDate(ts) { const d = new Date(ts); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${WEEK[d.getDay()]}요일`; }
+function fmtTime(ts) { const d = new Date(ts); const h = d.getHours(), m = d.getMinutes(); return `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')}`; }
+function fmtHour(ts) { const d = new Date(ts); const h = d.getHours(); return `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}시`; }
+function fmtDur(min) { const h = Math.floor(min / 60), m = Math.round(min % 60); return h ? (m ? `${h}시간 ${m}분` : `${h}시간`) : `${m}분`; }
+
+const ICONS = {
+  flameOff: '<path d="M12 3.5c.8 3 4.2 4.6 4.2 8.6a4.2 4.2 0 0 1-8.4 0c0-1.9.9-3.1 1.9-4 .3 1.5 1.1 2.4 2.1 2.4-.6-2.2-.4-4.6.2-7z"/><path d="M4.5 4.5l15 15"/>',
+  flame: '<path d="M12 3.5c.8 3 4.2 4.6 4.2 8.6a4.2 4.2 0 0 1-8.4 0c0-1.9.9-3.1 1.9-4 .3 1.5 1.1 2.4 2.1 2.4-.6-2.2-.4-4.6.2-7z"/>',
+  dropLow: '<path d="M12 3.5c2.9 3.7 5.3 6.6 5.3 9.6a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.9 5.3-9.6z"/><path d="M8.2 15h7.6"/>',
+  drop: '<path d="M12 3.5c2.9 3.7 5.3 6.6 5.3 9.6a5.3 5.3 0 0 1-10.6 0c0-3 2.4-5.9 5.3-9.6z"/>',
+  wind: '<path d="M3 8.5h10.5a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 12.5h15a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 16.5h7"/>',
+  thermo: '<path d="M10 14.2V5.5a2 2 0 1 1 4 0v8.7a3.8 3.8 0 1 1-4 0z"/><path d="M12 10v6"/>',
+  phone: '<path d="M6.5 4h2.8l1.4 4-1.9 1.3a10.5 10.5 0 0 0 5.9 5.9l1.3-1.9 4 1.4v2.8a1.8 1.8 0 0 1-1.8 1.8A15 15 0 0 1 4.7 5.8 1.8 1.8 0 0 1 6.5 4z"/>',
+  bell: '<path d="M6.5 16.5v-5a5.5 5.5 0 0 1 11 0v5l1.5 2h-14z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  chev: '<path d="M9.5 6l6 6-6 6"/>',
+  back: '<path d="M14.5 6l-6 6 6 6"/>',
+  list: '<path d="M5 6.5h14M5 12h14M5 17.5h9"/>',
+  map: '<path d="M9 4.5l-5 2v13l5-2 6 2 5-2v-13l-5 2z"/><path d="M9 4.5v13M15 6.5v13"/>',
+  house: '<path d="M4.5 10.5l7.5-6 7.5 6v9h-15z"/><path d="M10 19.5v-5h4v5"/>',
+  clip: '<path d="M9 4.5h6v3H9z"/><path d="M15 6h3v14H6V6h3"/><path d="M9 12h6M9 15.5h4"/>',
+  play: '<path d="M8 5.5v13l10-6.5z"/>',
+  pause: '<path d="M9 5.5v13M15 5.5v13"/>',
+  ff: '<path d="M4 6.5v11l7-5.5zM13 6.5v11l7-5.5z"/>',
+  reset: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+};
+function ic(name, size = 20, extra = '') { return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICONS[name]}</svg>`; }
+
+/* ==============================================================
+   상태
+   ============================================================== */
+let state = null;
+const ui = { tab: 'today', detail: null, record: null, form: null, ff: false, sheetOpen: false, tour: null };
+
+function newState() {
+  const rand = rng(20270114);
+  const houses = SEED.map((s, i) => {
+    const kBase = 0.0628 * (0.9 + rand() * 0.2);
+    return {
+      id: i, name: s[0], parent: s[1] === 'f' ? '어머니' : '아버지', area: s[2], village: s[3],
+      guardian: { rel: s[4], name: s[5] },
+      cap: 200, setLow: r1(17.6 + rand() * 0.8), setHigh: 0, kBase,
+      sim: { T: 18.6 + rand() * 1.2, levelL: s[6] * 2, k: kBase, forcedOff: false, firing: false },
+      live: null, lastFiringTs: null, hist: [], acc: { n: 0, f: 0 }, status: 'ok'
+    };
+  });
+  houses.forEach(h => { h.setHigh = r1(h.setLow + 1.6 + rand() * 0.6); });
+  return { v: 1, now: START - 24 * HOUR, houses, alerts: [], events: [], nextAlertId: 1, playing: true, role: 'worker', sel: 0 };
+}
+
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* 저장 못 해도 시연은 계속돼요 */ } }
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || s.v !== 1 || !Array.isArray(s.houses) || s.houses.length !== SEED.length) return null;
+    return s;
+  } catch (e) { return null; }
+}
+const byId = id => state.houses[id];
+
+/* ==============================================================
+   센서 입력 → 가구 상태
+   실제 센서 값도 이 함수로 들어와요
+   ============================================================== */
+function ingest(r) {
+  const h = byId(r.householdId);
+  if (!h) return;
+  const levelPct = clamp((SENSOR.tankHeightCm + SENSOR.sensorGapCm - r.tankDistanceCm) / SENSOR.tankHeightCm * 100, 0, 100);
+  const boiler = r.boilerCurrentA >= SENSOR.firingA ? 'firing' : r.boilerCurrentA >= SENSOR.poweredA ? 'idle' : 'off';
+  h.live = { ts: r.ts, levelPct, boiler, tempC: r.indoorTempC, hum: r.indoorHumidity, raw: r };
+  if (boiler === 'firing' || h.lastFiringTs == null) h.lastFiringTs = boiler === 'firing' ? r.ts : (h.lastFiringTs ?? r.ts);
+  h.acc.n++; if (boiler === 'firing') h.acc.f++;
+  const last = h.hist[h.hist.length - 1];
+  if (!last || r.ts - last.t >= 10 * MIN) {
+    h.hist.push({ t: r.ts, T: r1(r.indoorTempC), f: r2(h.acc.f / h.acc.n), lv: r1(levelPct) });
+    h.acc = { n: 0, f: 0 };
+    const cut = r.ts - 25 * HOUR;
+    while (h.hist.length && h.hist[0].t < cut) h.hist.shift();
+  }
+}
+
+/* ==============================================================
+   판정: 왜 추운지 가려내요
+   ============================================================== */
+function idleHours(h) { return h.live ? (h.live.ts - (h.lastFiringTs ?? h.live.ts)) / HOUR : 0; }
+function firingShare(h, hours) {
+  const from = h.live.ts - hours * HOUR;
+  const w = h.hist.filter(p => p.t > from);
+  return { n: w.length, share: w.length ? w.reduce((s, p) => s + p.f, 0) / w.length : 0 };
+}
+function judge(h) {
+  const L = h.live;
+  if (!L) return { type: 'ok' };
+  if (L.levelPct < RULES.fuelLowPct) return { type: 'fuel_low' };
+  if (idleHours(h) >= RULES.boilerIdleHours && L.tempC <= RULES.coldIndoorC) return { type: 'boiler_off' };
+  const fs = firingShare(h, RULES.insulShareWindowH);
+  const recent = h.hist.filter(p => p.t > L.ts - RULES.insulMaxWindowH * HOUR);
+  const maxT = recent.length ? Math.max(...recent.map(p => p.T)) : L.tempC;
+  if (fs.n >= RULES.insulShareWindowH * 6 * 0.8 && fs.share >= RULES.insulFiringShare && maxT < RULES.insulMaxC) return { type: 'insulation' };
+  return { type: 'ok' };
+}
+function dailyUseL(h) { const fs = firingShare(h, 24); return Math.max(1, fs.share * SIM.burnLph * 24); }
+function daysLeft(h) { return (h.live.levelPct / 100 * h.cap) / dailyUseL(h); }
+function daysLeftText(h) { const d = daysLeft(h); return d < 1 ? '하루도 못 가요' : `약 ${Math.round(d)}일 쓸 수 있어요`; }
+
+function sentence(h, type) {
+  const L = h.live;
+  if (type === 'boiler_off') return `기름은 있는데 보일러가 ${Math.floor(idleHours(h))}시간째 돌지 않고, 실내가 ${L.tempC.toFixed(1)}℃까지 내려갔어요.`;
+  if (type === 'fuel_low') return `기름이 ${Math.round(L.levelPct)}% 남았어요. 지금처럼 쓰면 ${daysLeftText(h)}.`;
+  if (type === 'insulation') return `보일러가 계속 도는데도 실내가 ${L.tempC.toFixed(1)}℃에 머물러요. 외풍이나 단열 문제일 수 있어요.`;
+  return '';
+}
+function bannerTitle(h, type, forGuardian) {
+  const who = forGuardian ? `${h.parent} 댁` : `${h.name} 어르신 댁`;
+  if (type === 'boiler_off') return `${who} 보일러가 꺼져 있어요`;
+  if (type === 'fuel_low') return `${who} 기름이 얼마 안 남았어요`;
+  return forGuardian ? `${h.parent} 댁이 잘 데워지지 않아요` : `${h.name} 어르신 댁이 잘 데워지지 않아요`;
+}
+function guardianAlertText(h, type) {
+  if (type === 'boiler_off') return `보일러가 ${Math.floor(idleHours(h))}시간째 돌지 않아서 담당 생활지원사 ${WORKER}님께 알렸어요.`;
+  if (type === 'fuel_low') return `기름이 ${Math.round(h.live.levelPct)}% 남아서 담당 생활지원사 ${WORKER}님께 알렸어요.`;
+  return `보일러가 계속 도는데도 집이 잘 데워지지 않아 담당 생활지원사 ${WORKER}님께 알렸어요.`;
+}
+
+/* 판정 결과가 바뀌면 알림을 만들어요 */
+function evaluate(h, quiet) {
+  const j = judge(h);
+  h.status = j.type;
+  const mine = state.alerts.filter(a => a.hid === h.id);
+  if (j.type !== 'ok') {
+    let active = mine.find(a => a.type === j.type && !a.cleared) || mine.find(a => a.type === j.type && a.status === 'open');
+    if (active) { active.cleared = false; if (active.status === 'open') active.recovered = false; return null; }
+    const a = {
+      id: state.nextAlertId++, hid: h.id, type: j.type, ts: h.live.ts, status: 'open', cleared: false, recovered: false,
+      title: bannerTitle(h, j.type, false), body: sentence(h, j.type), gTitle: bannerTitle(h, j.type, true)
+    };
+    state.alerts.push(a);
+    state.events.push({ hid: h.id, ts: h.live.ts, kind: 'alert', text: guardianAlertText(h, j.type) });
+    if (!quiet) queueBanner(a);
+    return a;
+  }
+  mine.forEach(a => { if (!a.cleared) { a.cleared = true; if (a.status === 'open') a.recovered = true; } });
+  return null;
+}
+
+/* ==============================================================
+   3) 데이터 소스
+   지금: SimulatedSource가 1분마다 가상 원시값을 만들어요.
+   실제 센서를 달면 이런 식으로 바꿔 끼우면 돼요 (서버 주소는 예시).
+
+   const ApiSource = {
+     async pull(sinceTs) {
+       const res = await fetch('/api/readings?since=' + sinceTs);
+       const readings = await res.json();       // 위 원시값 형식의 배열
+       readings.forEach(r => { ingest(r); evaluate(byId(r.householdId)); });
+     }
+   };
+   ============================================================== */
+const SIM = { burnLph: 1.2, P: 3.1 };
+function outsideTemp(ts) { const d = new Date(ts); const hr = d.getHours() + d.getMinutes() / 60; return -5 + 4 * Math.sin(2 * Math.PI * (hr - 9) / 24); }
+const SimulatedSource = {
+  read(h, ts) {
+    const s = h.sim, dt = 1 / 60;
+    const powered = !s.forcedOff, hasFuel = s.levelL > 0.5;
+    if (!powered || !hasFuel) s.firing = false;
+    else if (s.T <= h.setLow) s.firing = true;
+    else if (s.T >= h.setHigh) s.firing = false;
+    s.T += ((s.firing ? SIM.P : 0) - s.k * (s.T - outsideTemp(ts))) * dt;
+    if (s.firing) s.levelL = Math.max(0, s.levelL - SIM.burnLph * dt);
+    const n = Math.random() - 0.5;
+    return {
+      householdId: h.id, ts,
+      tankDistanceCm: r1(SENSOR.sensorGapCm + SENSOR.tankHeightCm * (1 - s.levelL / h.cap) + n * 0.2),
+      boilerCurrentA: s.firing ? r2(1.76 + n * 0.1) : powered ? r2(0.32 + n * 0.04) : r2(0.02 + Math.abs(n) * 0.02),
+      indoorTempC: r1(s.T + n * 0.1),
+      indoorHumidity: Math.round(42 + n * 4)
+    };
+  }
+};
+
+/* 가상 시계를 minutes만큼 진행해요 */
+function advance(minutes, opts = {}) {
+  let created = [];
+  for (let m = 0; m < minutes; m++) {
+    state.now += MIN;
+    for (const h of state.houses) {
+      ingest(SimulatedSource.read(h, state.now));
+      if (!opts.noEval) { const a = evaluate(h, opts.quiet); if (a) created.push(a); }
+    }
+    if (opts.stopHid != null && created.some(a => a.hid === opts.stopHid)) return { stopped: true, created, done: m + 1 };
+  }
+  return { stopped: false, created, done: minutes };
+}
+
+function boot() {
+  state = newState();
+  advance(24 * 60, { noEval: true });
+  state.houses.forEach(h => evaluate(h, true));
+  state.alerts = []; state.events = []; state.nextAlertId = 1;
+  state.houses.forEach(h => { h.status = judge(h).type; });
+  save();
+}
+
+/* ==============================================================
+   화면 조각
+   ============================================================== */
+const openAlerts = () => state.alerts.filter(a => a.status === 'open').sort((a, b) => TYPES[a.type].prio - TYPES[b.type].prio || a.ts - b.ts);
+function boilerLabel(h) {
+  if (h.status === 'boiler_off') return '꺼짐';
+  return { firing: '가동', idle: '쉼', off: '꺼짐' }[h.live.boiler];
+}
+function chip(type) { const t = TYPES[type]; return `<span class="chip ${t.cls}">${ic(t.icon, 16)}${t.label}</span>`; }
+function elapsed(h, a) {
+  if (a.type === 'boiler_off') return `${Math.floor(idleHours(h))}시간째`;
+  if (a.type === 'fuel_low') { const d = daysLeft(h); return d < 1 ? '하루 안 남음' : `약 ${Math.round(d)}일분`; }
+  return `${Math.floor((state.now - a.ts) / HOUR) + RULES.insulMaxWindowH}시간째`;
+}
+function cells(h, type) {
+  const L = h.live, cls = type ? TYPES[type].cls : '';
+  const hotF = type === 'fuel_low', hotB = type === 'boiler_off', hotT = type === 'boiler_off' || type === 'insulation';
+  return `<div class="cells ${cls}">
+    <div class="cell${hotF ? ' hot' : ''}"><small>기름</small><strong>${Math.round(L.levelPct)}%</strong></div>
+    <div class="cell${hotB ? ' hot' : ''}"><small>보일러</small><strong>${boilerLabel(h)}</strong></div>
+    <div class="cell${hotT ? ' hot' : ''}"><small>실내</small><strong>${L.tempC.toFixed(1)}℃</strong></div>
+  </div>`;
+}
+function alertCard(a) {
+  const h = byId(a.hid);
+  return `<article class="card ${TYPES[a.type].cls}">
+    <div class="between">${chip(a.type)}<span class="muted">${elapsed(h, a)}</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button type="button" class="namebtn" data-act="detail" data-hid="${h.id}">
+        <span class="who"><b>${h.name} 어르신</b><span>${h.area} ${h.village}</span></span>
+        <span style="margin-left:auto;color:var(--label)">${ic('chev', 18)}</span>
+      </button>
+    </div>
+    <p class="txt">${a.recovered ? '지금은 정상으로 돌아왔어요. 통화로 상황을 확인하고 기록해 주세요.' : sentence(h, a.type)}</p>
+    ${cells(h, a.recovered ? null : a.type)}
+    <div class="acts">
+      <button type="button" class="btn pri" data-act="call" data-who="${h.name} 어르신">${ic('phone', 18)}전화하기</button>
+      <button type="button" class="btn sec" data-act="record" data-aid="${a.id}">확인 결과 기록</button>
+    </div>
+  </article>`;
+}
+function houseRow(h, extra = '') {
+  const L = h.live, b = L.boiler === 'firing';
+  return `<button type="button" class="row" data-act="detail" data-hid="${h.id}">
+    <span class="who"><b>${h.name} 어르신</b><span>${extra || `${h.area} ${h.village}`}</span></span>
+    <span class="sig" aria-label="기름 ${Math.round(L.levelPct)}%, 보일러 ${boilerLabel(h)}, 실내 ${L.tempC.toFixed(1)}도">
+      <span>${ic('drop', 14, 'style="color:var(--sub)"')}${Math.round(L.levelPct)}%</span>
+      <span class="${b ? '' : 'dim'}">${ic('flame', 14)}${boilerLabel(h)}</span>
+      <span>${ic('thermo', 14, 'style="color:var(--sub)"')}${L.tempC.toFixed(1)}℃</span>
+    </span>
+  </button>`;
+}
+function tiles(open) {
+  return `<div class="tiles">${Object.keys(TYPES).map(k => {
+    const n = open.filter(a => a.type === k).length, t = TYPES[k];
+    return `<div class="tile ${t.cls}${n ? ' on' : ''}"><div class="n">${ic(t.icon, 18)}<span class="num">${n}</span></div><span class="lb">${t.label}</span></div>`;
+  }).join('')}</div>`;
+}
+function workerTop(title, sub) {
+  const n = openAlerts().length;
+  return `<header class="hdr">
+    <div class="top"><span class="word">온기 순찰대</span>
+      <span style="display:flex;align-items:center;gap:4px"><span class="tag">가상 센서로 시연 중</span>
+      <button type="button" class="iconbtn" data-act="tab" data-tab="log" aria-label="알림 기록${n ? `, 확인할 알림 ${n}건` : ''}">${ic('bell', 22)}${n ? '<span class="badge" aria-hidden="true"></span>' : ''}</button></span>
+    </div>
+    <h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}
+  </header>`;
+}
+
+/* ---------- 생활지원사: 오늘 ---------- */
+function viewToday() {
+  const open = openAlerts();
+  const openH = new Set(open.map(a => a.hid));
+  const done = state.alerts.filter(a => a.status === 'done' && state.now - a.doneTs < 24 * HOUR).sort((a, b) => b.doneTs - a.doneTs);
+  const doneH = new Set(done.map(a => a.hid));
+  const okList = state.houses.filter(h => !openH.has(h.id) && !(doneH.has(h.id) && h.status !== 'ok'));
+  const total = state.houses.length;
+  const stamp = `${fmtDate(state.now)} ${fmtTime(state.now)} 기준이에요.`;
+  const title = openH.size ? `오늘 확인할 집 ${openH.size}곳` : '오늘 확인할 집이 없어요';
+  const sub = openH.size ? `${stamp} 담당 ${total}가구 중 ${total - openH.size}가구는 확인할 일이 없어요.` : `${stamp} 담당 ${total}가구 모두 이상 없어요.`;
+  return `${workerTop(title, sub)}${tiles(open)}
+    ${open.length ? `<div class="sect"><h2>확인할 집 ${openH.size}곳</h2><span>전화로 먼저 확인해 주세요</span></div><div class="stack">${open.map(alertCard).join('')}</div>` : ''}
+    ${done.length ? `<div class="sect"><h2>확인 완료</h2></div><div class="list">${done.map(a => houseRow(byId(a.hid), `${TYPES[a.type].label}, ${REASONS[a.type].find(r => r.id === a.reason)?.b || '확인함'}`)).join('')}</div>` : ''}
+    <div class="sect"><h2>${open.length ? `이상 없는 집 ${okList.length}곳` : '담당 가구'}</h2></div>
+    <div class="list">${okList.map(h => houseRow(h)).join('')}</div>`;
+}
+
+/* ---------- 생활지원사: 지도 ---------- */
+function housePos(h) {
+  const base = AREA_POS[h.area];
+  const idx = state.houses.filter(x => x.area === h.area && x.id < h.id).length;
+  const j = JITTER[idx % JITTER.length];
+  return [base[0] + j[0], base[1] + j[1]];
+}
+function viewMap() {
+  const open = openAlerts();
+  const order = new Map(); open.forEach(a => { if (!order.has(a.hid)) order.set(a.hid, { n: order.size + 1, type: a.type }); });
+  const okDots = state.houses.filter(h => !order.has(h.id)).map(h => { const [x, y] = housePos(h); return `<circle cx="${x}" cy="${y}" r="5" fill="#8A94A3" stroke="var(--halo)" stroke-width="2"></circle>`; }).join('');
+  const pins = [...order.entries()].map(([hid, o]) => {
+    const h = byId(hid), [x, y] = housePos(h);
+    return `<g class="pin" role="button" tabindex="0" data-act="detail" data-hid="${hid}" aria-label="${o.n}번 ${h.name} 어르신, ${TYPES[o.type].label}">
+      <circle cx="${x}" cy="${y}" r="22" fill="transparent"></circle>
+      <circle class="ring" cx="${x}" cy="${y}" r="14" fill="${PIN[o.type]}" stroke="#FFFFFF" stroke-width="3"></circle>
+      <text x="${x}" y="${y + 4.5}" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">${o.n}</text>
+    </g>`;
+  }).join('');
+  const labels = Object.entries(AREA_POS).map(([name, [x, y]]) => `<text x="${x}" y="${y + 30}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--sub)" stroke="var(--halo)" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${name}</text>`).join('');
+  return `${workerTop('지도로 보기', open.length ? '번호는 먼저 살필 순서예요. 핀을 누르면 그 집을 보여 줘요.' : '지금은 확인할 집이 없어요. 회색 점은 이상 없는 집이에요.')}
+    <div class="mapwrap">
+      <svg viewBox="0 0 390 430" role="img" aria-label="강릉 지도에 담당 가구 위치가 표시되어 있어요">
+        <rect width="390" height="430" fill="var(--land)"></rect>
+        <g fill="none" stroke="var(--contour)" stroke-width="1.5"><path d="M0 120 C40 100 70 140 110 125 C140 114 160 140 150 170"/><path d="M0 200 C30 180 80 215 120 200"/><path d="M0 300 C50 280 90 320 140 300 C170 288 190 310 185 340"/><path d="M0 390 C40 370 100 410 150 390"/></g>
+        <path d="M250 0 C262 45 270 70 275 90 C287 140 294 170 300 200 C308 250 312 270 318 300 C326 340 333 380 342 430 L390 430 L390 0 Z" fill="var(--sea)"></path>
+        <ellipse cx="270" cy="245" rx="34" ry="26" fill="var(--city)"></ellipse>
+        <g fill="none" stroke-linecap="round">
+          <path d="M226 0 C243 60 253 120 266 200 C278 260 287 300 298 360 C305 395 312 415 318 430" stroke="var(--road-edge)" stroke-width="7"/>
+          <path d="M268 248 C225 254 185 244 130 262 C90 274 45 268 0 282" stroke="var(--road-edge)" stroke-width="7"/>
+          <path d="M226 0 C243 60 253 120 266 200 C278 260 287 300 298 360 C305 395 312 415 318 430" stroke="var(--road)" stroke-width="4"/>
+          <path d="M268 248 C225 254 185 244 130 262 C90 274 45 268 0 282" stroke="var(--road)" stroke-width="4"/>
+        </g>
+        <text x="352" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="var(--sea-ink)" letter-spacing="2">동해</text>
+        <text x="270" y="249" text-anchor="middle" font-size="11" fill="var(--sub)">강릉 시내</text>
+        ${labels}${okDots}${pins}
+      </svg>
+    </div>
+    ${open.length ? `<div class="sect"><h2>확인할 집</h2></div><div class="list">${[...order.entries()].map(([hid, o]) => houseRow(byId(hid), `${o.n}번, ${TYPES[o.type].label}`)).join('')}</div>` : ''}`;
+}
+
+/* ---------- 생활지원사: 담당 가구 ---------- */
+function viewHouses() {
+  const areas = [...new Set(state.houses.map(h => h.area))];
+  return `${workerTop('담당 가구', `${state.houses.length}가구를 맡고 있어요.`)}
+    ${areas.map(ar => `<div class="sect"><h2>${ar}</h2><span>${state.houses.filter(h => h.area === ar).length}가구</span></div>
+      <div class="list">${state.houses.filter(h => h.area === ar).map(h => houseRow(h, `${h.village}${h.status !== 'ok' ? `, ${TYPES[h.status].label}` : ''}`)).join('')}</div>`).join('')}`;
+}
+
+/* ---------- 생활지원사: 기록 ---------- */
+function viewLog() {
+  const all = [...state.alerts].sort((a, b) => b.ts - a.ts);
+  return `${workerTop('알림 기록', all.length ? '오늘 받은 알림과 확인한 결과예요.' : '')}
+    ${all.length ? `<div class="stack">${all.map(a => {
+      const h = byId(a.hid), r = REASONS[a.type].find(x => x.id === a.reason);
+      return `<div class="card ${TYPES[a.type].cls}">
+        <div class="between">${chip(a.type)}<span class="muted">${fmtTime(a.ts)}</span></div>
+        <button type="button" class="namebtn" data-act="detail" data-hid="${h.id}"><span class="who"><b>${h.name} 어르신</b><span>${h.area} ${h.village}</span></span><span style="margin-left:auto;color:var(--label)">${ic('chev', 18)}</span></button>
+        <p class="txt">${esc(a.body)}</p>
+        ${a.status === 'done'
+          ? `<p class="muted"><b style="color:var(--ink)">${fmtTime(a.doneTs)} 확인 완료:</b> ${r ? r.b : ''}${a.follow?.length ? `. ${a.follow.join(', ')}` : ''}${a.memo ? `<br>메모: ${esc(a.memo)}` : ''}</p>`
+          : `<div class="acts"><button type="button" class="btn sec" data-act="record" data-aid="${a.id}">확인 결과 기록</button></div>`}
+      </div>`;
+    }).join('')}</div>` : `<p class="empty">아직 받은 알림이 없어요. 오른쪽 아래 시연 버튼으로 상황을 만들어 보세요.</p>`}`;
+}
+
+/* ---------- 생활지원사: 가구 상세 ---------- */
+function chartSVG(h) {
+  const x0 = 30, x1 = 318, y0 = 16, y1 = 140, now = h.live.ts, start = now - 24 * HOUR;
+  const pts = h.hist.filter(p => p.t >= start);
+  if (pts.length < 2) return '';
+  const temps = pts.map(p => p.T);
+  const lo = Math.min(8, Math.floor(Math.min(...temps)) - 1), hi = Math.max(22, Math.ceil(Math.max(...temps)) + 1);
+  const X = t => x0 + (t - start) / (24 * HOUR) * (x1 - x0);
+  const Y = T => y1 - (T - lo) / (hi - lo) * (y1 - y0);
+  const poly = pts.map(p => `${X(p.t).toFixed(1)},${Y(p.T).toFixed(1)}`).join(' ');
+  let bars = '', seg = null;
+  const segW = (10 * MIN) / (24 * HOUR) * (x1 - x0);
+  pts.forEach(p => {
+    if (p.f >= 0.5) { const x = X(p.t) - segW; if (seg && Math.abs(seg.end - x) < 0.5) seg.end = X(p.t); else { if (seg) bars += `<rect x="${Math.max(x0, seg.x).toFixed(1)}" y="152" width="${(seg.end - Math.max(x0, seg.x)).toFixed(1)}" height="10" rx="2"></rect>`; seg = { x, end: X(p.t) }; } }
+  });
+  if (seg) bars += `<rect x="${Math.max(x0, seg.x).toFixed(1)}" y="152" width="${(seg.end - Math.max(x0, seg.x)).toFixed(1)}" height="10" rx="2"></rect>`;
+  let band = '';
+  if (h.status === 'boiler_off' && h.lastFiringTs) {
+    const bx = Math.max(x0, X(h.lastFiringTs));
+    band = `<rect x="${bx.toFixed(1)}" y="${y0}" width="${(x1 - bx).toFixed(1)}" height="${y1 - y0}" fill="var(--blue-t)"></rect><text x="${((bx + x1) / 2).toFixed(1)}" y="31" text-anchor="middle" font-size="11" font-weight="600" fill="var(--blue)">${x1 - bx > 50 ? '꺼진 뒤' : ''}</text>`;
+  }
+  const grid = [10, 15, 20].filter(v => v > lo && v < hi).map(v => `<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${x1}" y2="${Y(v).toFixed(1)}" stroke="var(--line2)"></line><text x="25" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--label)">${v}℃</text>`).join('');
+  const xl = [0, 1, 2, 3, 4].map(k => { const t = start + k * 6 * HOUR; const x = X(t); const anchor = k === 0 ? 'start' : k === 4 ? 'end' : 'middle'; return `<text x="${x.toFixed(1)}" y="184" text-anchor="${anchor}" font-size="11" fill="var(--label)">${k === 4 ? '지금' : fmtHour(t)}</text>`; }).join('');
+  const last = pts[pts.length - 1];
+  const hot = h.status === 'boiler_off' || h.status === 'insulation';
+  const dot = hot ? (h.status === 'boiler_off' ? 'var(--blue)' : 'var(--violet)') : 'var(--ink)';
+  return `<svg class="chart" viewBox="0 0 324 190" role="img" aria-label="지난 24시간 실내 온도. 지금 ${h.live.tempC.toFixed(1)}도.">
+    ${band}${grid}
+    <polyline points="${poly}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    <circle cx="${X(last.t).toFixed(1)}" cy="${Y(last.T).toFixed(1)}" r="4.5" fill="${dot}" stroke="var(--surface)" stroke-width="2"></circle>
+    <rect x="${x0}" y="152" width="${x1 - x0}" height="10" rx="3" fill="var(--track)"></rect>
+    <g fill="#8A94A3">${bars}</g>
+    ${xl}
+  </svg>`;
+}
+const POSSIBLE = { boiler_off: ['외출 중', '보일러 고장', '비용 때문에 꺼 둠'], fuel_low: ['주문을 깜빡함', '비용 때문에 미룸'], insulation: ['창문 열림', '문틈 외풍', '단열 부족'] };
+const VERDICT = { boiler_off: '기름은 있는데 보일러가 꺼진 채 집이 식고 있어요', fuel_low: '기름이 곧 떨어져요', insulation: '보일러는 도는데 집이 데워지지 않아요', ok: '따뜻하게 지내고 계세요' };
+function verdictSub(h) {
+  if (h.status === 'boiler_off') return `${fmtTime(h.lastFiringTs)}부터 ${Math.floor(idleHours(h))}시간째 돌지 않아요.`;
+  if (h.status === 'fuel_low') return `약 ${Math.round(h.live.levelPct * h.cap / 100)}L 남았어요. 하루 평균 ${Math.round(dailyUseL(h))}L를 써요.`;
+  if (h.status === 'insulation') { const fs = firingShare(h, RULES.insulShareWindowH); return `최근 ${RULES.insulShareWindowH}시간 중 ${Math.round(fs.share * 100)}% 동안 보일러가 돌았어요.`; }
+  return '기름, 보일러, 실내 온도 모두 괜찮아요.';
+}
+function viewDetail(hid) {
+  const h = byId(hid), L = h.live, st = h.status, t = TYPES[st];
+  const open = state.alerts.find(a => a.hid === hid && a.status === 'open');
+  const yday = h.hist.find(p => p.t >= L.ts - 24 * HOUR);
+  const lowFuel = L.levelPct < RULES.fuelLowPct;
+  const bState = { firing: '연소 중', idle: '전원 켜짐, 연소 안 함', off: '전원 꺼짐' }[L.boiler];
+  return `<div class="bar"><button type="button" class="iconbtn" data-act="back" aria-label="뒤로">${ic('back', 22)}</button><span>${ui.tab === 'map' ? '지도로 보기' : ui.tab === 'houses' ? '담당 가구' : ui.tab === 'log' ? '알림 기록' : '오늘 확인할 집'}</span></div>
+  <div class="page">
+    <div style="padding:0 4px;display:flex;flex-direction:column;gap:4px">
+      <h1 style="font-size:24px;line-height:32px">${h.name} 어르신</h1>
+      <p class="sub">강릉시 ${h.area} ${h.village}에 혼자 지내세요.<br>보호자는 ${h.guardian.rel} ${h.guardian.name}님이에요.</p>
+    </div>
+    <section class="verdict ${t ? t.cls : 'ok'}" aria-label="지금 상태">
+      ${t ? chip(st) : '<span class="chip plain">이상 없음</span>'}
+      <div style="display:flex;flex-direction:column;gap:6px"><h2>${VERDICT[st]}</h2><p class="sub">${verdictSub(h)}</p></div>
+      <div class="cells">
+        <div class="sigbox${st === 'fuel_low' ? ' hot' : ''}">${ic('drop', 20)}<small>기름</small><strong>${st === 'boiler_off' ? '있음 ' : ''}${Math.round(L.levelPct)}%</strong></div>
+        <div class="sigbox${st === 'boiler_off' ? ' hot' : ''}">${ic(st === 'boiler_off' || L.boiler === 'off' ? 'flameOff' : 'flame', 20)}<small>보일러</small><strong>${boilerLabel(h)}</strong></div>
+        <div class="sigbox${st === 'boiler_off' || st === 'insulation' ? ' hot' : ''}">${ic('thermo', 20)}<small>실내</small><strong>${L.tempC.toFixed(1)}℃</strong></div>
+      </div>
+      ${yday ? `<p class="muted">어제 이맘때는 ${yday.T.toFixed(1)}℃였어요.</p>` : ''}
+    </section>
+    <section class="card">
+      <div class="between" style="flex-wrap:wrap"><h3 style="margin:0;font-size:16px;line-height:24px;font-weight:600">지난 24시간</h3>
+        <div class="legend"><span><i aria-hidden="true" style="width:14px;height:3px;border-radius:2px;background:var(--ink)"></i>실내 온도</span><span><i aria-hidden="true" style="width:14px;height:8px;border-radius:2px;background:#8A94A3"></i>보일러 가동</span></div></div>
+      ${chartSVG(h)}
+    </section>
+    <section class="card">
+      <div class="between"><h3 style="margin:0;font-size:16px;line-height:24px;font-weight:600">등유 탱크</h3><span class="muted">${h.cap}L 탱크</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px"><span class="big">${Math.round(L.levelPct)}%</span><span class="muted">약 ${Math.round(L.levelPct * h.cap / 100)}L</span></div>
+      <div class="gauge" role="img" aria-label="잔량 ${Math.round(L.levelPct)}%"><div class="${lowFuel ? 'low' : ''}" style="width:${L.levelPct.toFixed(1)}%"></div><i style="left:${RULES.fuelLowPct}%"></i></div>
+      <p class="sub">하루 평균 ${Math.round(dailyUseL(h))}L를 써서 ${daysLeftText(h)}. 주황 선(${RULES.fuelLowPct}%) 아래로 내려가면 기름 부족 알림이 가요.</p>
+    </section>
+    ${t ? `<section class="card"><h3 style="margin:0;font-size:16px;line-height:24px;font-weight:600">짐작할 수 있는 상황</h3>
+      <div class="chips">${POSSIBLE[st].map(x => `<span>${x}</span>`).join('')}</div>
+      <p class="sub">센서만으로는 이유를 알 수 없어요. 찾아가기 전에 먼저 전화로 안부를 확인해 주세요.</p></section>` : ''}
+    <details class="card">
+      <summary>센서 원시값${ic('chev', 18, 'style="color:var(--label);transition:transform .2s"')}</summary>
+      <ul class="raw">
+        <li><span>탱크 초음파 거리</span><span>${L.raw.tankDistanceCm.toFixed(1)}cm, 잔량 ${Math.round(L.levelPct)}%</span></li>
+        <li><span>보일러 전류</span><span>${L.raw.boilerCurrentA.toFixed(2)}A, ${bState}</span></li>
+        <li><span>실내 온습도</span><span>${L.raw.indoorTempC.toFixed(1)}℃, ${L.raw.indoorHumidity}%</span></li>
+        <li><span>측정 시각</span><span>${fmtTime(L.raw.ts)}</span></li>
+      </ul>
+      <p class="muted">지금은 가상 센서 값이에요. 센서를 달면 이 자리에 실제 측정값이 들어와요.</p>
+    </details>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button type="button" class="btn pri big" data-act="call" data-who="${h.name} 어르신">${ic('phone', 20)}어르신께 전화하기</button>
+      <div class="acts">
+        <button type="button" class="btn sec" data-act="call" data-who="보호자 ${h.guardian.name}님">보호자에게 전화</button>
+        ${open ? `<button type="button" class="btn sec" data-act="record" data-aid="${open.id}">확인 결과 기록</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 생활지원사: 통화 확인 기록 ---------- */
+function viewRecord(aid) {
+  const a = state.alerts.find(x => x.id === aid), h = byId(a.hid);
+  const reasons = REASONS[a.type];
+  if (!ui.form || ui.form.aid !== aid) { const r0 = reasons[0]; ui.form = { aid, reason: null, follow: [], memo: '', notify: true }; }
+  const f = ui.form, sel = reasons.find(r => r.id === f.reason);
+  return `<div class="bar"><button type="button" class="iconbtn" data-act="back" aria-label="뒤로">${ic('back', 22)}</button><h1>통화 확인 기록</h1></div>
+  <div class="page" style="gap:20px">
+    <div class="card ${TYPES[a.type].cls}" style="flex-direction:row;align-items:center;justify-content:space-between">
+      <span class="who"><b style="font-size:16px;line-height:22px">${h.name} 어르신</b><span>${fmtTime(a.ts)} 알림</span></span>${chip(a.type)}
+    </div>
+    <fieldset>
+      <legend>통화해 보니 어떤 상황이었나요?</legend>
+      ${reasons.map(r => `<label class="opt${f.reason === r.id ? ' sel' : ''}"><input type="radio" name="reason" value="${r.id}" ${f.reason === r.id ? 'checked' : ''}><span><b>${r.b}</b><span>${r.s}</span></span></label>`).join('')}
+    </fieldset>
+    ${sel ? `<fieldset class="box"><legend style="font-size:16px;line-height:24px;font-weight:600;margin-bottom:4px;float:left;width:100%">이어 줄 곳</legend>
+      ${sel.f.map((x, i) => `<label class="check"><input type="checkbox" name="follow" value="${i}" ${f.follow.includes(x) ? 'checked' : ''}>${x}</label>`).join('')}
+    </fieldset>` : ''}
+    <div style="display:flex;flex-direction:column;gap:6px"><label class="lbl" for="memo">메모</label><textarea id="memo" placeholder="통화하면서 들은 내용을 적어 주세요">${esc(f.memo)}</textarea></div>
+    <label class="check"><input type="checkbox" id="notify" ${f.notify ? 'checked' : ''}>결과를 보호자 ${h.guardian.name}님께 알려요</label>
+    <button type="button" class="btn pri big" data-act="submitRecord" ${sel ? '' : 'disabled style="opacity:.45"'}>기록하고 연계하기</button>
+  </div>`;
+}
+
+/* ---------- 보호자 ---------- */
+function viewGuardian() {
+  const h = byId(state.sel), L = h.live, st = h.status;
+  const evs = state.events.filter(e => e.hid === h.id && e.ts > state.now - 24 * HOUR).sort((a, b) => a.ts - b.ts);
+  const lowFuel = L.levelPct < RULES.fuelLowPct;
+  const bHot = st === 'boiler_off', tHot = st === 'boiler_off' || st === 'insulation';
+  const tCls = st === 'insulation' ? 't-violet' : 't-blue';
+  const bText = bHot ? '꺼져 있어요' : { firing: '돌고 있어요', idle: '쉬는 중이에요', off: '꺼져 있어요' }[L.boiler];
+  const bSub = bHot || L.boiler === 'off' ? `${fmtTime(h.lastFiringTs)}부터` : L.boiler === 'idle' ? '온도가 맞아 쉬는 중' : '난방 중';
+  return `<header class="hdr">
+      <div class="top"><span class="word">온기 순찰대</span><span class="tag">가상 센서로 시연 중</span></div>
+      <h1>${h.parent} 댁</h1><p class="sub">강릉시 ${h.area} ${h.village}</p>
+    </header>
+    <div class="stack" style="gap:16px">
+      <section class="card" style="border-radius:20px;padding:20px;gap:12px">
+        <h2 style="font-size:15px;line-height:22px;font-weight:600;color:var(--sub)">등유 탱크</h2>
+        <div class="between" style="align-items:baseline"><span style="font-size:44px;line-height:52px;font-weight:700;font-variant-numeric:tabular-nums">${Math.round(L.levelPct)}%</span><span class="muted" style="font-size:15px">약 ${Math.round(L.levelPct * h.cap / 100)}L 남음</span></div>
+        <div class="gauge" style="height:16px;border-radius:8px" role="img" aria-label="잔량 ${Math.round(L.levelPct)}%"><div class="${lowFuel ? 'low' : ''}" style="width:${L.levelPct.toFixed(1)}%;border-radius:8px"></div><i style="left:${RULES.fuelLowPct}%;height:24px"></i></div>
+        <p class="txt">지금처럼 쓰면 ${daysLeftText(h)}.</p>
+        <p class="muted">주황 선(${RULES.fuelLowPct}%) 아래로 내려가면 바로 알려 드려요.</p>
+      </section>
+      <div class="duo">
+        <div class="cell ${tCls}${bHot ? ' hot' : ''}"><small style="display:flex;align-items:center;gap:6px;font-size:13px">${ic(bHot || L.boiler === 'off' ? 'flameOff' : 'flame', 18)}보일러</small><b>${bText}</b><small style="font-size:13px">${bSub}</small></div>
+        <div class="cell ${tCls}${tHot ? ' hot' : ''}"><small style="display:flex;align-items:center;gap:6px;font-size:13px">${ic('thermo', 18)}실내 온도</small><b>${L.tempC.toFixed(1)}℃</b><small style="font-size:13px">${(h.hist.find(p => p.t >= L.ts - 24 * HOUR)) ? `어제 이맘때 ${h.hist.find(p => p.t >= L.ts - 24 * HOUR).T.toFixed(1)}℃` : ''}</small></div>
+      </div>
+      <section class="card" style="padding:20px;gap:14px">
+        <h2 style="font-size:16px;line-height:24px;font-weight:600">오늘 소식</h2>
+        ${evs.length ? `<ol class="timeline">${evs.map((e, i) => `<li><span class="rail" aria-hidden="true"><i class="${e.kind === 'alert' ? 'a' : ''}"></i>${i < evs.length - 1 ? '<em></em>' : ''}</span><span class="body"><time>${fmtTime(e.ts)}</time><p>${esc(e.text)}</p></span></li>`).join('')}</ol>`
+          : `<p class="sub">오늘은 특별한 소식이 없어요. 따뜻하게 지내고 계세요.</p>`}
+      </section>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" class="btn pri big" data-act="call" data-who="${h.parent}">${ic('phone', 20)}${h.parent}께 전화하기</button>
+        <button type="button" class="btn sec" data-act="call" data-who="생활지원사 ${WORKER}님">생활지원사 ${WORKER}님께 문의</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- 지자체 ---------- */
+function viewAdmin() {
+  const live = {};
+  Object.keys(AREA_BASE).forEach(k => live[k] = { b: 0, f: 0, i: 0 });
+  state.alerts.forEach(a => { const ar = byId(a.hid).area; live[ar][a.type === 'boiler_off' ? 'b' : a.type === 'fuel_low' ? 'f' : 'i']++; });
+  const rows = Object.entries(AREA_BASE).map(([ar, b]) => ({ ar, hh: b.hh, b: b.b + live[ar].b, f: b.f + live[ar].f, i: b.i + live[ar].i })).map(r => ({ ...r, tot: r.b + r.f + r.i })).sort((x, y) => y.tot - x.tot);
+  const sum = rows.reduce((s, r) => ({ hh: s.hh + r.hh, b: s.b + r.b, f: s.f + r.f, i: s.i + r.i }), { hh: 0, b: 0, f: 0, i: 0 });
+  const total = sum.b + sum.f + sum.i;
+  const openN = state.alerts.filter(a => a.status === 'open').length;
+  const doneN = 33 + state.alerts.filter(a => a.status === 'done').length;
+  const todo = r => {
+    if (!r.tot) return '알림 없음';
+    if (r.tot < 5) return '지금처럼 살피기';
+    const m = Math.max(r.b, r.f, r.i);
+    if (m === r.b) return '보일러를 꺼 두는 집이 많아요. 비용 상담과 바우처 안내부터';
+    if (m === r.f) return '기름 부족 알림이 많아요. 주문 도움과 바우처 확인';
+    return '단열 의심이 많아요. 효율개선 사업 신청 안내';
+  };
+  const mini = r => `<span class="mini" role="img" aria-label="보일러 꺼짐 ${r.b}, 기름 부족 ${r.f}, 단열 의심 ${r.i}">${r.b ? `<span style="width:${r.b * 12}px;background:#2A66B8"></span>` : ''}${r.f ? `<span style="width:${r.f * 12}px;background:#B85A14"></span>` : ''}${r.i ? `<span style="width:${r.i * 12}px;background:#4B3A78"></span>` : ''}</span>`;
+  return `<header class="hdr" style="padding-top:20px">
+      <div class="top" style="flex-wrap:wrap"><span style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span class="word" style="font-size:16px">온기 순찰대 관리</span><span class="muted" style="font-size:14px">강릉시 노인 돌봄 담당</span></span><span class="tag">가상 센서로 시연 중</span></div>
+      <h1 style="font-size:28px;line-height:36px;margin-top:8px">읍·면·동별 난방 알림</h1>
+      <p class="sub" style="max-width:640px">어느 동네에서 어떤 이유로 집이 추운지 보고, 바우처 안내와 효율개선 사업 홍보를 어디부터 할지 정해요.</p>
+    </header>
+    <div class="kpis">
+      <section class="kpi"><h2>참여 가구</h2><span class="v">${sum.hh}가구</span><span class="muted">8개 읍·면</span></section>
+      <section class="kpi"><h2>알림 ${total}건, 이유별로 보면</h2>
+        <div class="stackbar" role="img" aria-label="보일러 꺼짐 ${sum.b}건, 기름 부족 ${sum.f}건, 단열 의심 ${sum.i}건"><span style="flex:${sum.b};background:#2A66B8"></span><span style="flex:${sum.f};background:#B85A14"></span><span style="flex:${sum.i};background:#4B3A78"></span></div>
+        <div class="legend" style="font-size:14px;color:var(--ink)"><span><i class="sw" style="background:#2A66B8"></i>보일러 꺼짐 ${sum.b}</span><span><i class="sw" style="background:#B85A14"></i>기름 부족 ${sum.f}</span><span><i class="sw" style="background:#4B3A78"></i>단열 의심 ${sum.i}</span></div>
+      </section>
+      <section class="kpi"><h2>전화 확인</h2><span class="v">${doneN}건 완료</span><span class="muted">${openN + 4}건은 생활지원사가 확인하고 있어요</span></section>
+    </div>
+    <div style="height:16px"></div>
+    <section class="tbl-box">
+      <div><h2 style="font-size:18px;line-height:26px;font-weight:700">동네별 알림</h2><p class="muted">알림이 많은 동네부터 보여요. 1월 1일부터 쌓인 예시 기록에 시연 중 생긴 알림이 더해져요.</p></div>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th scope="col">읍·면·동</th><th scope="col" class="r">참여 가구</th><th scope="col" class="r">보일러 꺼짐</th><th scope="col" class="r">기름 부족</th><th scope="col" class="r">단열 의심</th><th scope="col">이유별 분포</th><th scope="col">먼저 할 일</th></tr></thead>
+        <tbody>${rows.map(r => `<tr><th scope="row">${r.ar}</th><td class="r">${r.hh}</td><td class="r">${r.b}</td><td class="r">${r.f}</td><td class="r">${r.i}</td><td>${r.tot ? mini(r) : '<span class="muted">없음</span>'}</td><td${r.tot < 5 ? ' style="color:var(--sub)"' : ''}>${todo(r)}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>`;
+}
+
+/* ==============================================================
+   렌더링
+   ============================================================== */
+function renderScreen() {
+  const app = $('#app'), role = state.role;
+  app.classList.toggle('wide', role === 'admin');
+  app.classList.toggle('notab', role !== 'worker');
+  let html;
+  if (role === 'guardian') html = viewGuardian();
+  else if (role === 'admin') html = viewAdmin();
+  else if (ui.record != null) html = viewRecord(ui.record);
+  else if (ui.detail != null) html = viewDetail(ui.detail);
+  else html = { today: viewToday, map: viewMap, houses: viewHouses, log: viewLog }[ui.tab]();
+  const scr = $('#screen');
+  const openDetails = scr.querySelector('details[open]') != null;
+  scr.innerHTML = html;
+  if (openDetails) { const d = scr.querySelector('details'); if (d) d.open = true; }
+  renderTabbar();
+  $('#fab').classList.toggle('low', role !== 'worker');
+  $('#fab').hidden = (role === 'worker' && ui.record != null) || ui.tour != null;
+  tourCheck();
+  renderCoach();
+  app.classList.toggle('touring', ui.tour != null);
+}
+function renderTabbar() {
+  const tb = $('#tabbar');
+  tb.hidden = state.role !== 'worker';
+  const tabs = [['today', 'list', '오늘'], ['map', 'map', '지도'], ['houses', 'house', '담당 가구'], ['log', 'clip', '기록']];
+  tb.innerHTML = tabs.map(([k, icn, lb]) => `<button type="button" data-act="tab" data-tab="${k}" ${ui.tab === k && ui.detail == null && ui.record == null ? 'aria-current="page"' : ''}>${ic(icn, 22)}${lb}</button>`).join('');
+}
+function renderTick() {
+  if (ui.record != null && state.role === 'worker') return; // 기록 작성 중엔 화면을 다시 그리지 않아요
+  const y = window.scrollY;
+  renderScreen();
+  window.scrollTo(0, y);
+  if (ui.sheetOpen) { const c = $('#simclock'); if (c) c.textContent = `${fmtDate(state.now)} ${fmtTime(state.now)}`; }
+}
+
+/* ---------- 알림 배너 ---------- */
+let bannerTimer = null;
+function queueBanner(a) {
+  const role = state.role;
+  if (role === 'admin') return;
+  if (role === 'guardian' && a.hid !== state.sel) return;
+  const h = byId(a.hid), g = role === 'guardian';
+  const body = g ? guardianAlertText(h, a.type) : `${a.body} ${a.type === 'fuel_low' ? '주문 도움이 필요한지 확인해 주세요.' : '먼저 전화로 안부를 확인해 주세요.'}`;
+  $('#banner').innerHTML = `<div class="bcard" role="alert">
+    <div class="bn"><span class="appicon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11l7.5-6 7.5 6v8.5h-15z"/></svg><i></i></span>
+      <span class="bt"><span class="meta"><b>온기 순찰대</b><span>지금</span></span><span class="t">${g ? a.gTitle : a.title}</span><span class="b">${esc(body)}</span></span></div>
+    <div class="bacts">
+      <button type="button" data-act="call" data-who="${g ? h.parent : h.name + ' 어르신'}">${ic('phone', 18)}전화하기</button>
+      <button type="button" data-act="bannerOpen" data-hid="${h.id}">자세히 보기</button>
+    </div>
+  </div>`;
+  $('#banner').classList.add('show');
+  try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) { }
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(hideBanner, 8000);
+}
+function hideBanner() { $('#banner').classList.remove('show'); }
+
+/* ---------- 토스트 ---------- */
+let toastTimer = null;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+
+/* ---------- 빨리 감기 ---------- */
+function fastForward(totalMin, stopHid) {
+  if (ui.ff) return;
+  ui.ff = true;
+  const pill = $('#ffpill');
+  let doneMin = 0;
+  const per = Math.max(1, Math.ceil(totalMin / 75));
+  pill.classList.add('show');
+  const step = () => {
+    const n = Math.min(per, totalMin - doneMin);
+    const res = advance(n, { stopHid });
+    doneMin += res.done;
+    pill.innerHTML = `${ic('ff', 16)}${fmtDur(doneMin)} 지나는 중, ${fmtTime(state.now)}`;
+    renderTick();
+    if (res.stopped || doneMin >= totalMin) {
+      ui.ff = false; save();
+      setTimeout(() => pill.classList.remove('show'), res.stopped ? 400 : 900);
+      if (!res.stopped && stopHid != null) toast(`${fmtDur(doneMin)} 지났어요. 아직 알림 조건에 닿지 않았어요.`);
+      return;
+    }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ---------- 시연 패널 ---------- */
+function renderSheet() {
+  const sel = state.sel;
+  $('#sheet').innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="simtitle">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="between" style="align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:4px"><h2 id="simtitle">가상 센서 시뮬레이터</h2>
+        <p class="sub">실제 센서 대신 값을 만들어 보내요. 센서를 달면 이 자리에 실제 값이 들어와요.</p></div>
+      <button type="button" class="iconbtn" data-act="closeSim" aria-label="닫기">${ic('close', 22)}</button>
+    </div>
+    <div class="grp"><b>화면</b>
+      <div class="seg" role="group" aria-label="누구의 화면으로 볼지">
+        ${[['worker', '생활지원사'], ['guardian', '보호자'], ['admin', '지자체']].map(([k, l]) => `<button type="button" data-act="role" data-role="${k}" aria-pressed="${state.role === k}">${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="grp"><label for="simsel" style="font-size:14px;line-height:20px;font-weight:600">상황을 만들 집</label>
+      <select id="simsel">${state.houses.map(h => `<option value="${h.id}" ${h.id === sel ? 'selected' : ''}>${h.name} 어르신 (${h.area} ${h.village})</option>`).join('')}</select>
+    </div>
+    <div class="grp"><b>상황 만들기</b>
+      <div class="scen">
+        <button type="button" class="t-blue" data-act="scen" data-scen="boiler">${ic('flameOff', 24)}보일러 끄기</button>
+        <button type="button" class="t-orange" data-act="scen" data-scen="fuel">${ic('dropLow', 24)}기름 바닥내기</button>
+        <button type="button" class="t-violet" data-act="scen" data-scen="draft">${ic('wind', 24)}외풍 생기게</button>
+      </div>
+      <p class="muted">누르면 시간이 빨리 흐르다가 알림 조건에 닿는 순간 알림이 와요.</p>
+      <button type="button" class="btn sec" data-act="scen" data-scen="normal">${ic('check', 18)}이 집을 정상으로 되돌리기</button>
+    </div>
+    <div class="grp"><b>가상 시계</b>
+      <p class="clock" id="simclock">${fmtDate(state.now)} ${fmtTime(state.now)}</p>
+      <div class="acts">
+        <button type="button" class="btn sec" data-act="play">${ic(state.playing ? 'pause' : 'play', 18)}${state.playing ? '멈추기' : '흐르게 하기'}</button>
+        <button type="button" class="btn sec" data-act="ffwd" data-min="60">${ic('ff', 18)}1시간</button>
+        <button type="button" class="btn sec" data-act="ffwd" data-min="360">${ic('ff', 18)}6시간</button>
+      </div>
+      <p class="muted">흐르게 하면 실제 1초에 가상 1분씩 지나요.</p>
+    </div>
+    <button type="button" class="btn pri" data-act="tourStart">1분 체험 다시 하기</button>
+    <button type="button" class="btn sec" data-act="reset">${ic('reset', 18)}처음 상태로 되돌리기</button>
+  </div>`;
+}
+function openSim() { ui.sheetOpen = true; renderSheet(); $('#sheet').hidden = false; setTimeout(() => { const f = $('#sheet .iconbtn'); if (f) f.focus(); }, 30); }
+function closeSim() { ui.sheetOpen = false; $('#sheet').hidden = true; $('#fab').focus(); }
+
+function applyScenario(kind) {
+  const h = byId(state.sel), s = h.sim;
+  closeSim();
+  if (state.role === 'admin') state.role = 'worker';
+  if (state.role === 'worker') { ui.detail = null; ui.record = null; ui.tab = 'today'; }
+  renderScreen(); window.scrollTo(0, 0);
+  if (kind === 'boiler') { s.forcedOff = true; fastForward(8 * 60, h.id); }
+  else if (kind === 'fuel') { s.levelL = Math.min(s.levelL, h.cap * 0.208); fastForward(10 * 60, h.id); }
+  else if (kind === 'draft') { s.k = 0.22; fastForward(10 * 60, h.id); }
+  else if (kind === 'normal') {
+    s.forcedOff = false; s.k = h.kBase;
+    if (s.levelL < h.cap * 0.3) { s.levelL = h.cap * 0.8; state.events.push({ hid: h.id, ts: state.now, kind: 'info', text: '기름을 채웠어요.' }); }
+    toast(`${h.name} 어르신 댁을 정상으로 되돌렸어요. 시간이 지나면 다시 따뜻해져요.`);
+    save();
+  }
+}
+
+/* ---------- 기록 제출 ---------- */
+function submitRecord() {
+  const f = ui.form, a = state.alerts.find(x => x.id === f.aid);
+  const r = REASONS[a.type].find(x => x.id === f.reason);
+  if (!r) return;
+  const memoEl = $('#memo'); if (memoEl) f.memo = memoEl.value.trim();
+  a.status = 'done'; a.reason = r.id; a.follow = f.follow.slice(); a.memo = f.memo; a.doneTs = state.now;
+  if (f.notify) state.events.push({ hid: a.hid, ts: state.now, kind: 'record', text: `생활지원사 ${WORKER}님이 통화했어요. ${r.g}` });
+  ui.form = null; ui.record = null; ui.detail = null; ui.tab = 'today';
+  save(); renderScreen(); window.scrollTo(0, 0);
+  toast(f.notify ? '기록했어요. 보호자에게도 결과를 알렸어요.' : '기록했어요.');
+}
+
+/* ---------- 1분 체험 안내: 심사위원이 혼자 눌러 봐도 흐름을 따라가게 해요 ---------- */
+const TOUR = [
+  { t: '온기 순찰대 시제품이에요', b: '실제 센서 대신 가상 센서 값으로 움직여요. 생활지원사가 되어 알림을 받고 처리하는 과정을 1분 만에 체험해 보세요.', go: '체험 시작' },
+  { t: '보일러가 꺼진 상황을 만들어 볼게요', b: '김*순 어르신 댁 보일러를 끄면 시간이 빨리 흐르면서 집이 식어요. 실내가 15℃ 아래로 내려가면 알림이 와요.', go: '보일러 끄기' },
+  { t: '알림이 왔어요', b: '센서 값만 보고 앱이 먼저 알려 줬어요. 어떤 집인지 자세히 볼까요?', go: '자세히 보기' },
+  { t: '왜 추운지 세 칸으로 가려내요', b: '기름은 있고, 보일러는 꺼져 있고, 실내는 식고 있어요. 그래서 기름 부족이 아니라 보일러 꺼짐이에요. 전화로 확인한 뒤 결과를 남겨요.', go: '확인 결과 기록하기' },
+  { t: '통화 결과를 골라요', b: '이유를 고르면 이어 줄 곳이 저절로 채워져요. 직접 골라도 되고, 예시로 채워도 돼요.', go: '예시로 기록하기' },
+  { t: '보호자에게도 전해졌어요', b: '기록과 동시에 서울에 사는 딸 이*영님에게 결과가 갔어요. 보호자 화면으로 볼까요?', go: '보호자 화면 보기' },
+  { t: '보호자는 이렇게 봐요', b: '알림부터 통화 결과까지 오늘 소식에 차례로 쌓여요. 마지막으로 지자체 화면을 볼까요?', go: '지자체 화면 보기' },
+  { t: '동네별로 모아 봐요', b: '어느 동네에서 어떤 이유로 집이 추운지 모이니까, 바우처 안내를 어디부터 할지 정할 수 있어요. 체험은 여기까지예요.', go: '체험 끝내기' }
+];
+function startTour(fresh) {
+  if (fresh) { boot(); hideBanner(); }
+  ui.tab = 'today'; ui.detail = null; ui.record = null; ui.form = null;
+  state.role = 'worker'; state.sel = 0;
+  ui.tour = { step: fresh ? 1 : 0 };
+  renderScreen(); window.scrollTo(0, 0);
+}
+function endTour() { ui.tour = null; state.tourSeen = true; save(); renderScreen(); }
+function tourAlert() { return state.alerts.find(a => a.hid === 0 && a.type === 'boiler_off'); }
+function tourCheck() {
+  const T = ui.tour; if (!T) return;
+  const a0 = tourAlert();
+  if (T.step === 1 && a0) T.step = 2;
+  if (T.step === 2 && ui.detail === 0) T.step = 3;
+  if (T.step === 3 && ui.record != null) T.step = 4;
+  if (T.step === 4 && a0 && a0.status === 'done') T.step = 5;
+  if (T.step === 5 && state.role === 'guardian') T.step = 6;
+  if (T.step === 6 && state.role === 'admin') T.step = 7;
+}
+function renderCoach() {
+  const c = $('#coach'), sc = $('#coachScrim'), T = ui.tour;
+  if (!T) { c.hidden = true; sc.hidden = true; c.innerHTML = ''; return; }
+  const s = TOUR[T.step], busy = T.step === 1 && ui.ff;
+  sc.hidden = T.step !== 0;
+  c.hidden = false;
+  c.classList.toggle('low', state.role !== 'worker');
+  c.innerHTML = `<div class="cc" role="region" aria-label="체험 안내" aria-live="polite">
+    <div class="between"><span class="step">${T.step ? `체험 ${T.step}/${TOUR.length - 1}` : '처음 오셨나요?'}</span><button type="button" class="skip" data-act="tourSkip">${T.step === 0 ? '직접 둘러볼게요' : '건너뛰기'}</button></div>
+    <h2>${busy ? '집이 식고 있어요' : s.t}</h2>
+    <p class="sub">${busy ? '시간이 빨리 흐르는 중이에요. 실내가 15℃ 아래로 내려가는 순간 알림이 와요.' : s.b}</p>
+    ${busy ? '' : `<button type="button" class="btn pri big" data-act="tourGo">${s.go}</button>`}
+  </div>`;
+}
+function tourGo() {
+  const T = ui.tour; if (!T) return;
+  const a0 = tourAlert();
+  if (T.step === 0) startTour(true);
+  else if (T.step === 1) { state.sel = 0; applyScenario('boiler'); }
+  else if (T.step === 2) { hideBanner(); ui.detail = 0; ui.record = null; renderScreen(); window.scrollTo(0, 0); }
+  else if (T.step === 3 && a0) { ui.record = a0.id; renderScreen(); window.scrollTo(0, 0); }
+  else if (T.step === 4 && a0) {
+    const r = REASONS.boiler_off.find(x => x.id === 'cost');
+    ui.form = { aid: a0.id, reason: 'cost', follow: r.f.slice(), memo: '난방비 아끼려고 밤에는 끄신다고 함. 바우처는 아직 신청 안 하셨음.', notify: true };
+    const m = $('#memo'); if (m) m.value = ui.form.memo;
+    submitRecord();
+  }
+  else if (T.step === 5) { state.sel = 0; state.role = 'guardian'; hideBanner(); renderScreen(); window.scrollTo(0, 0); }
+  else if (T.step === 6) { state.role = 'admin'; renderScreen(); window.scrollTo(0, 0); }
+  else if (T.step === 7) { state.role = 'worker'; ui.tab = 'today'; endTour(); window.scrollTo(0, 0); }
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) { if (e.target.id === 'sheet') closeSim(); return; }
+  const act = el.dataset.act;
+  if (act === 'tab') { ui.tab = el.dataset.tab; ui.detail = null; ui.record = null; renderScreen(); window.scrollTo(0, 0); }
+  else if (act === 'detail') { ui.detail = +el.dataset.hid; ui.record = null; renderScreen(); window.scrollTo(0, 0); }
+  else if (act === 'back') { if (ui.record != null) { ui.record = null; } else ui.detail = null; renderScreen(); window.scrollTo(0, 0); }
+  else if (act === 'record') { ui.record = +el.dataset.aid; renderScreen(); window.scrollTo(0, 0); }
+  else if (act === 'call') toast(`시연이라 ${el.dataset.who}께 실제로 전화가 걸리지는 않아요.`);
+  else if (act === 'submitRecord') submitRecord();
+  else if (act === 'tourGo') tourGo();
+  else if (act === 'tourSkip') endTour();
+  else if (act === 'tourStart') { closeSim(); startTour(true); }
+  else if (act === 'bannerOpen') {
+    hideBanner();
+    const hid = +el.dataset.hid;
+    if (state.role === 'worker') { ui.detail = hid; ui.record = null; }
+    renderScreen(); window.scrollTo(0, 0);
+  }
+  else if (act === 'openSim') openSim();
+  else if (act === 'closeSim') closeSim();
+  else if (act === 'role') { hideBanner(); state.role = el.dataset.role; ui.detail = null; ui.record = null; save(); renderScreen(); renderSheet(); }
+  else if (act === 'scen') applyScenario(el.dataset.scen);
+  else if (act === 'play') { state.playing = !state.playing; save(); renderSheet(); }
+  else if (act === 'ffwd') { closeSim(); fastForward(+el.dataset.min, null); }
+  else if (act === 'reset') { boot(); ui.detail = null; ui.record = null; ui.form = null; ui.tab = 'today'; ui.tour = { step: 0 }; hideBanner(); closeSim(); renderScreen(); window.scrollTo(0, 0); }
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g.pin')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  if (e.key === 'Escape' && ui.sheetOpen) closeSim();
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'simsel') { state.sel = +t.value; save(); if (state.role === 'guardian') renderScreen(); return; }
+  if (!ui.form) return;
+  if (t.name === 'reason') {
+    const memoEl = $('#memo'); if (memoEl) ui.form.memo = memoEl.value;
+    const a = state.alerts.find(x => x.id === ui.form.aid);
+    const r = REASONS[a.type].find(x => x.id === t.value);
+    ui.form.reason = r.id; ui.form.follow = r.f.slice();
+    const y = window.scrollY; renderScreen(); window.scrollTo(0, y);
+  } else if (t.name === 'follow') {
+    const a = state.alerts.find(x => x.id === ui.form.aid);
+    const r = REASONS[a.type].find(x => x.id === ui.form.reason);
+    const item = r.f[+t.value];
+    ui.form.follow = t.checked ? [...new Set([...ui.form.follow, item])] : ui.form.follow.filter(x => x !== item);
+  } else if (t.id === 'notify') ui.form.notify = t.checked;
+});
+document.addEventListener('input', e => { if (e.target.id === 'memo' && ui.form) ui.form.memo = e.target.value; });
+
+/* ---------- 시작 ---------- */
+state = load();
+if (!state) boot();
+const tok = (location.hash || '').slice(1);
+if (tok === 'guardian' || tok === 'admin' || tok === 'worker') state.role = tok;
+if (!state.tourSeen && !tok) ui.tour = { step: 0 };
+renderScreen();
+/* 눌러 보는 중에 화면이 바뀌지 않도록, 손가락이 닿아 있을 땐 다시 그리지 않아요 */
+let tickN = 0, pressing = false, pending = false;
+document.addEventListener('pointerdown', () => { pressing = true; }, true);
+document.addEventListener('pointerup', () => { pressing = false; if (pending) { pending = false; setTimeout(renderTick, 250); } }, true);
+document.addEventListener('pointercancel', () => { pressing = false; }, true);
+setInterval(() => {
+  if (!state.playing || ui.ff || document.hidden) return;
+  const res = advance(1);
+  tickN++;
+  if (res.created.length || tickN % 10 === 0) { if (pressing) pending = true; else renderTick(); }
+  else if (ui.sheetOpen) { const c = $('#simclock'); if (c) c.textContent = `${fmtDate(state.now)} ${fmtTime(state.now)}`; }
+  if (tickN % 15 === 0) save();
+}, 1000);
+</script>
+</body>
+</html>
