@@ -224,6 +224,35 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
 .app.touring{padding-bottom:calc(320px + env(safe-area-inset-bottom,0px))}
 .app.touring ~ .toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 16px);transform:translate(-50%,-20px)}
 .app.touring ~ .toast.show{transform:translate(-50%,0)}
+.callwrap{position:fixed;inset:0;z-index:60;background:linear-gradient(180deg,#1D2733 0%,#10151B 100%);color:#FFFFFF;display:flex;justify-content:center;overflow:auto}
+.callwrap[hidden]{display:none}
+.callscr{width:100%;max-width:480px;min-height:100%;display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 20px) 24px calc(env(safe-area-inset-bottom,0px) + 36px);gap:18px}
+.calltag{font-size:12px;line-height:16px;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:4px 10px;color:rgba(255,255,255,.88)}
+.callwho{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:20px;text-align:center}
+.callwho .avatar{width:96px;height:96px;border-radius:48px;background:#2A66B8;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;margin-bottom:10px}
+.dialing .avatar,.ringing .avatar{animation:callpulse 1.4s infinite}
+@keyframes callpulse{0%{box-shadow:0 0 0 0 rgba(77,140,230,.65)}100%{box-shadow:0 0 0 30px rgba(77,140,230,0)}}
+.callwho b{font-size:28px;line-height:36px;font-weight:700}
+.callwho span{font-size:15px;line-height:22px;color:rgba(255,255,255,.78)}
+.callwho .cstat{font-size:17px;color:#FFFFFF;margin-top:4px;font-variant-numeric:tabular-nums}
+.waves{display:flex;gap:5px;height:26px;align-items:center}
+.waves i{width:4px;height:8px;border-radius:2px;background:rgba(255,255,255,.85);animation:callwave 1s infinite ease-in-out}
+.waves i:nth-child(2){animation-delay:.15s}.waves i:nth-child(3){animation-delay:.3s}.waves i:nth-child(4){animation-delay:.45s}.waves i:nth-child(5){animation-delay:.6s}
+@keyframes callwave{0%,100%{height:6px}50%{height:24px}}
+.captions{flex:1;width:100%;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px}
+.cap{background:rgba(255,255,255,.12);border-radius:16px;padding:10px 14px;font-size:15px;line-height:22px;max-width:86%;align-self:flex-start;animation:capin .3s ease-out}
+.cap.me{align-self:flex-end;background:rgba(42,102,184,.6)}
+.cap small{display:block;font-size:12px;line-height:16px;color:rgba(255,255,255,.75);margin-bottom:2px}
+@keyframes capin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.callbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 20px;justify-items:center;width:100%;max-width:320px}
+.callbtns.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cbtn{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9);border:0;background:none;padding:0;min-width:64px}
+.cbtn .c{width:64px;height:64px;border-radius:32px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#FFFFFF}
+.cbtn[aria-pressed="true"] .c{background:#FFFFFF;color:#1B2430}
+.cend .c{background:#D93A3A;width:72px;height:72px;border-radius:36px}
+.cacc .c{background:#2E9E5B;width:72px;height:72px;border-radius:36px}
+.cbtn:disabled{opacity:.5}
+@media (prefers-reduced-motion:reduce){.dialing .avatar,.ringing .avatar,.waves i,.cap{animation:none}}
 @media (prefers-reduced-motion:reduce){.banner,.ffpill,.toast{transition:none}}
 </style>
 </head>
@@ -238,6 +267,7 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
 <div class="ffpill" id="ffpill" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="sheet-wrap" id="sheet" hidden></div>
+<div class="callwrap" id="call" hidden></div>
 <div class="coach-scrim" id="coachScrim" hidden></div>
 <div class="coach" id="coach" hidden></div>
 
@@ -391,7 +421,10 @@ const ICONS = {
   ff: '<path d="M4 6.5v11l7-5.5zM13 6.5v11l7-5.5z"/>',
   reset: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
-  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  mic: '<path d="M12 4a2.5 2.5 0 0 1 2.5 2.5v5a2.5 2.5 0 0 1-5 0v-5A2.5 2.5 0 0 1 12 4z"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3"/>',
+  keypad: '<circle cx="7" cy="5.5" r="1"/><circle cx="12" cy="5.5" r="1"/><circle cx="17" cy="5.5" r="1"/><circle cx="7" cy="10.5" r="1"/><circle cx="12" cy="10.5" r="1"/><circle cx="17" cy="10.5" r="1"/><circle cx="7" cy="15.5" r="1"/><circle cx="12" cy="15.5" r="1"/><circle cx="17" cy="15.5" r="1"/><circle cx="12" cy="20.5" r="1"/>',
+  speaker: '<path d="M5 9.5h3l4-3.5v12l-4-3.5H5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'
 };
 function ic(name, size = 20, extra = '') { return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICONS[name]}</svg>`; }
 
@@ -608,7 +641,7 @@ function alertCard(a) {
     <p class="txt">${a.recovered ? '지금은 정상으로 돌아왔어요. 통화로 상황을 확인하고 기록해 주세요.' : sentence(h, a.type)}</p>
     ${cells(h, a.recovered ? null : a.type)}
     <div class="acts">
-      <button type="button" class="btn pri" data-act="call" data-who="${h.name} 어르신">${ic('phone', 18)}전화하기</button>
+      <button type="button" class="btn pri" data-act="call" data-hid="${h.id}" data-to="elder">${ic('phone', 18)}전화하기</button>
       <button type="button" class="btn sec" data-act="record" data-aid="${a.id}">확인 결과 기록</button>
     </div>
   </article>`;
@@ -815,9 +848,9 @@ function viewDetail(hid) {
       <p class="muted">지금은 가상 센서 값이에요. 센서를 달면 이 자리에 실제 측정값이 들어와요.</p>
     </details>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button type="button" class="btn pri big" data-act="call" data-who="${h.name} 어르신">${ic('phone', 20)}어르신께 전화하기</button>
+      <button type="button" class="btn pri big" data-act="call" data-hid="${h.id}" data-to="elder">${ic('phone', 20)}어르신께 전화하기</button>
       <div class="acts">
-        <button type="button" class="btn sec" data-act="call" data-who="보호자 ${h.guardian.name}님">보호자에게 전화</button>
+        <button type="button" class="btn sec" data-act="call" data-hid="${h.id}" data-to="guardian">보호자에게 전화</button>
         ${open ? `<button type="button" class="btn sec" data-act="record" data-aid="${open.id}">확인 결과 기록</button>` : ''}
       </div>
     </div>
@@ -879,8 +912,8 @@ function viewGuardian() {
           : `<p class="sub">오늘은 특별한 소식이 없어요. 따뜻하게 지내고 계세요.</p>`}
       </section>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button type="button" class="btn pri big" data-act="call" data-who="${h.parent}">${ic('phone', 20)}${h.parent}께 전화하기</button>
-        <button type="button" class="btn sec" data-act="call" data-who="생활지원사 ${WORKER}님">생활지원사 ${WORKER}님께 문의</button>
+        <button type="button" class="btn pri big" data-act="call" data-hid="${h.id}" data-to="elder">${ic('phone', 20)}${h.parent}께 전화하기</button>
+        <button type="button" class="btn sec" data-act="call" data-hid="${h.id}" data-to="worker">생활지원사 ${WORKER}님께 문의</button>
       </div>
     </div>`;
 }
@@ -977,7 +1010,7 @@ function queueBanner(a) {
     <div class="bn"><span class="appicon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11l7.5-6 7.5 6v8.5h-15z"/></svg><i></i></span>
       <span class="bt"><span class="meta"><b>온기 순찰대</b><span>지금</span></span><span class="t">${g ? a.gTitle : a.title}</span><span class="b">${esc(body)}</span></span></div>
     <div class="bacts">
-      <button type="button" data-act="call" data-who="${g ? h.parent : h.name + ' 어르신'}">${ic('phone', 18)}전화하기</button>
+      <button type="button" data-act="call" data-hid="${h.id}" data-to="elder">${ic('phone', 18)}전화하기</button>
       <button type="button" data-act="bannerOpen" data-hid="${h.id}">자세히 보기</button>
     </div>
   </div>`;
@@ -1044,6 +1077,10 @@ function renderSheet() {
       <p class="muted">누르면 시간이 빨리 흐르다가 알림 조건에 닿는 순간 알림이 와요.</p>
       <button type="button" class="btn sec" data-act="scen" data-scen="normal">${ic('check', 18)}이 집을 정상으로 되돌리기</button>
     </div>
+    ${state.role !== 'admin' ? `<div class="grp"><b>가상 전화</b>
+      <button type="button" class="btn sec" data-act="incoming">${ic('phone', 18)}${state.role === 'guardian' ? '생활지원사에게서 전화 오게 하기' : '이 집 어르신에게서 전화 오게 하기'}</button>
+      <p class="muted">${state.role === 'guardian' ? '보호자 폰으로 생활지원사의 전화가 와요.' : '위에서 고른 집의 어르신이 전화를 걸어와요.'}</p>
+    </div>` : ''}
     <div class="grp"><b>가상 시계</b>
       <p class="clock" id="simclock">${fmtDate(state.now)} ${fmtTime(state.now)}</p>
       <div class="acts">
@@ -1095,8 +1132,8 @@ const TOUR = [
   { t: '온기 순찰대 시제품이에요', b: '실제 센서 대신 가상 센서 값으로 움직여요. 생활지원사가 되어 알림을 받고 처리하는 과정을 1분 만에 체험해 보세요.', go: '체험 시작' },
   { t: '보일러가 꺼진 상황을 만들어 볼게요', b: '김*순 어르신 댁 보일러를 끄면 시간이 빨리 흐르면서 집이 식어요. 실내가 15℃ 아래로 내려가면 알림이 와요.', go: '보일러 끄기' },
   { t: '알림이 왔어요', b: '센서 값만 보고 앱이 먼저 알려 줬어요. 어떤 집인지 자세히 볼까요?', go: '자세히 보기' },
-  { t: '왜 추운지 세 칸으로 가려내요', b: '기름은 있고, 보일러는 꺼져 있고, 실내는 식고 있어요. 그래서 기름 부족이 아니라 보일러 꺼짐이에요. 전화로 확인한 뒤 결과를 남겨요.', go: '확인 결과 기록하기' },
-  { t: '통화 결과를 골라요', b: '이유를 고르면 이어 줄 곳이 저절로 채워져요. 직접 골라도 되고, 예시로 채워도 돼요.', go: '예시로 기록하기' },
+  { t: '왜 추운지 세 칸으로 가려내요', b: '기름은 있고, 보일러는 꺼져 있고, 실내는 식고 있어요. 그래서 기름 부족이 아니라 보일러 꺼짐이에요. 찾아가기 전에 먼저 전화로 이유를 물어봐요.', go: '어르신께 전화하기' },
+  { t: '통화 내용이 채워져 있어요', b: '통화에서 들은 이유와 이어 줄 곳이 미리 골라져 있어요. 확인하고 기록하면 보호자에게도 전해져요.', go: '이대로 기록하기' },
   { t: '보호자에게도 전해졌어요', b: '기록과 동시에 서울에 사는 딸 이*영님에게 결과가 갔어요. 보호자 화면으로 볼까요?', go: '보호자 화면 보기' },
   { t: '보호자는 이렇게 봐요', b: '알림부터 통화 결과까지 오늘 소식에 차례로 쌓여요. 마지막으로 지자체 화면을 볼까요?', go: '지자체 화면 보기' },
   { t: '동네별로 모아 봐요', b: '어느 동네에서 어떤 이유로 집이 추운지 모이니까, 바우처 안내를 어디부터 할지 정할 수 있어요. 체험은 여기까지예요.', go: '체험 끝내기' }
@@ -1140,16 +1177,157 @@ function tourGo() {
   if (T.step === 0) startTour(true);
   else if (T.step === 1) { state.sel = 0; applyScenario('boiler'); }
   else if (T.step === 2) { hideBanner(); ui.detail = 0; ui.record = null; renderScreen(); window.scrollTo(0, 0); }
-  else if (T.step === 3 && a0) { ui.record = a0.id; renderScreen(); window.scrollTo(0, 0); }
+  else if (T.step === 3 && a0) { callElder(0); }
   else if (T.step === 4 && a0) {
     const r = REASONS.boiler_off.find(x => x.id === 'cost');
-    ui.form = { aid: a0.id, reason: 'cost', follow: r.f.slice(), memo: '난방비 아끼려고 밤에는 끄신다고 함. 바우처는 아직 신청 안 하셨음.', notify: true };
+    const cur = $('#memo') ? $('#memo').value.trim() : '';
+    ui.form = { aid: a0.id, reason: (ui.form && ui.form.aid === a0.id && ui.form.reason) || 'cost', follow: (ui.form && ui.form.aid === a0.id && ui.form.follow.length) ? ui.form.follow : r.f.slice(), memo: cur || MEMO_FROM_CALL.boiler_off, notify: true };
     const m = $('#memo'); if (m) m.value = ui.form.memo;
     submitRecord();
   }
   else if (T.step === 5) { state.sel = 0; state.role = 'guardian'; hideBanner(); renderScreen(); window.scrollTo(0, 0); }
   else if (T.step === 6) { state.role = 'admin'; renderScreen(); window.scrollTo(0, 0); }
   else if (T.step === 7) { state.role = 'worker'; ui.tab = 'today'; endTour(); window.scrollTo(0, 0); }
+}
+
+/* ---------- 가상 통화: 실제 전화 대신 통화 화면과 대화 예시를 보여 줘요 ---------- */
+const call = { on: false, phase: '', ctx: null, t0: 0, sec: 0, timers: [], shown: [] };
+const REASON_FROM_CALL = { boiler_off: 'cost', fuel_low: 'forgot', insulation: 'draft' };
+const MEMO_FROM_CALL = {
+  boiler_off: '통화 내용: 기름값이 걱정돼서 밤에는 꺼 두셨다고 하심.',
+  fuel_low: '통화 내용: 기름 주문을 깜빡하셨다고 하심.',
+  insulation: '통화 내용: 문틈으로 바람이 많이 들어온다고 하심.'
+};
+const hon = h => (h.parent === '어머니' ? '어머님' : '아버님');
+function fmtSec(s) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function activeType(hid) { const a = state.alerts.find(x => x.hid === hid && x.status === 'open'); return a ? a.type : (byId(hid).status || 'ok'); }
+function lastDoneG(hid) {
+  const d = state.alerts.filter(x => x.hid === hid && x.status === 'done').sort((p, q) => q.doneTs - p.doneTs)[0];
+  if (!d) return '';
+  const r = REASONS[d.type].find(x => x.id === d.reason);
+  return r ? r.g : '';
+}
+function peerInfo(ctx) {
+  const h = byId(ctx.hid);
+  if (ctx.peer === 'elder') return state.role === 'guardian'
+    ? { name: h.parent, sub: `강릉시 ${h.area} ${h.village}`, av: h.name[0] }
+    : { name: `${h.name} 어르신`, sub: `${h.area} ${h.village}`, av: h.name[0] };
+  if (ctx.peer === 'guardian') return { name: `${h.guardian.name}님`, sub: `${h.name} 어르신의 ${h.guardian.rel}`, av: h.guardian.name[0] };
+  return { name: `생활지원사 ${WORKER}님`, sub: '온기 순찰대', av: WORKER[0] };
+}
+function callScript(ctx) {
+  const h = byId(ctx.hid), type = activeType(ctx.hid), role = state.role;
+  const mom = h.parent === '어머니' ? '엄마' : '아빠';
+  const label = type !== 'ok' ? TYPES[type].label : '';
+  const g = lastDoneG(ctx.hid);
+  if (ctx.dir === 'out' && ctx.peer === 'elder' && role !== 'guardian') return {
+    boiler_off: [['t', '여보세요.'], ['m', `어르신, 온기 순찰대 ${WORKER}이에요. 보일러가 꺼져 있다고 떠서 전화드렸어요.`], ['t', '기름값이 걱정돼서 밤에는 꺼 뒀어.'], ['m', '그러셨구나. 난방비 지원을 받으실 수 있는지 알아봐 드릴게요.']],
+    fuel_low: [['t', '여보세요.'], ['m', '어르신, 기름이 얼마 안 남았다고 떠서 전화드렸어요.'], ['t', '아이고, 주문하는 걸 깜빡했네.'], ['m', '제가 주유소에 연락해 드릴게요.']],
+    insulation: [['t', '여보세요.'], ['m', '어르신, 보일러는 도는데 집이 잘 안 데워진다고 떠서요.'], ['t', '문틈으로 바람이 많이 들어와.'], ['m', '문풍지 붙여 드릴 수 있게 연결해 드릴게요.']],
+    ok: [['t', '여보세요.'], ['m', '어르신, 안부 전화드렸어요. 따뜻하게 지내고 계시죠?'], ['t', '응, 덕분에 따뜻해.']]
+  }[type];
+  if (ctx.dir === 'out' && ctx.peer === 'elder') return type === 'ok'
+    ? [['t', '여보세요.'], ['m', `${mom}, 잘 지내? 집은 따뜻해?`], ['t', '응, 따뜻하게 잘 있어.']]
+    : [['t', '여보세요.'], ['m', `${mom}, 집이 춥다고 알림이 왔어. 괜찮아?`], ['t', { boiler_off: '기름값 아끼려고 잠깐 꺼 뒀어.', fuel_low: '기름 시킨다는 걸 깜빡했네.', insulation: '바람이 좀 들어오긴 해.' }[type]], ['m', '추우면 안 돼. 생활지원사님이랑 같이 챙겨 볼게.']];
+  if (ctx.dir === 'out' && ctx.peer === 'guardian') return type === 'ok'
+    ? [['t', '네, 여보세요.'], ['m', `온기 순찰대 ${WORKER}입니다. ${hon(h)} 정기 안부로 연락드렸어요.`], ['t', '늘 감사합니다.']]
+    : [['t', '네, 여보세요.'], ['m', `온기 순찰대 ${WORKER}입니다. ${hon(h)} 댁에 ${label} 알림이 와서 연락드렸어요.`], ['t', '제가 바로 전화해 볼게요. 알려 주셔서 감사해요.']];
+  if (ctx.dir === 'out' && ctx.peer === 'worker') return [['t', `네, 온기 순찰대 ${WORKER}입니다.`], ['m', `${h.parent} 댁 일로 연락드렸어요.`],
+    ['t', g ? `방금 ${hon(h)}과 통화했어요. ${g}` : type !== 'ok' ? '네, 저도 알림 받았어요. 바로 전화드려 볼게요.' : `${hon(h)} 요즘 따뜻하게 잘 지내세요.`], ['m', '감사합니다.']];
+  if (ctx.dir === 'in' && ctx.peer === 'elder') return {
+    boiler_off: [['t', '선생님, 나야. 보일러가 안 켜지네.'], ['m', '네 어르신, 저도 알림 받았어요. 왜 꺼졌는지 같이 볼게요.'], ['t', '사실 기름값이 걱정돼서 내가 꺼 뒀어.'], ['m', '그러셨구나. 난방비 지원을 받으실 수 있는지 알아봐 드릴게요.']],
+    fuel_low: [['t', '선생님, 기름이 다 돼 가는 것 같아.'], ['m', '네, 저도 봤어요. 주문하시는 걸 깜빡하셨어요?'], ['t', '응, 깜빡했네.'], ['m', '제가 주유소에 연락해 드릴게요.']],
+    insulation: [['t', '선생님, 보일러를 켜도 집이 추워.'], ['m', '네, 저도 봤어요. 바람이 들어오는 데가 있으세요?'], ['t', '문틈으로 바람이 많이 들어와.'], ['m', '문풍지 붙여 드릴 수 있게 연결해 드릴게요.']],
+    ok: [['t', '선생님, 그냥 생각나서 전화했어.'], ['m', '잘하셨어요. 요즘 집은 따뜻하세요?'], ['t', '응, 따뜻해.']]
+  }[type];
+  if (ctx.dir === 'in' && ctx.peer === 'worker') return g
+    ? [['t', `안녕하세요, 온기 순찰대 ${WORKER}입니다.`], ['t', `방금 ${hon(h)}과 통화했어요. ${g}`], ['m', '알려 주셔서 감사해요.']]
+    : type !== 'ok'
+      ? [['t', `안녕하세요, 온기 순찰대 ${WORKER}입니다.`], ['t', `${hon(h)} 댁에 ${label} 알림이 와서 연락드렸어요. 곧 ${hon(h)}께 전화드려 볼게요.`], ['m', '네, 부탁드려요.']]
+      : [['t', `안녕하세요, 온기 순찰대 ${WORKER}입니다.`], ['t', `정기 안부로 연락드렸어요. ${hon(h)} 잘 지내고 계세요.`], ['m', '늘 감사합니다.']];
+  return [['t', '여보세요.'], ['m', '안녕하세요.']];
+}
+function capHTML(w, t) { const pi = peerInfo(call.ctx); return `<div class="cap${w === 'm' ? ' me' : ''}"><small>${w === 'm' ? '나' : esc(pi.name)}</small>${esc(t)}</div>`; }
+function renderCall() {
+  const pi = peerInfo(call.ctx), ph = call.phase;
+  const status = ph === 'dialing' ? '전화 거는 중…' : ph === 'ringing' ? '전화가 왔어요' : ph === 'ended' ? `통화 종료 ${fmtSec(call.sec)}` : fmtSec(Math.floor((Date.now() - call.t0) / 1000));
+  const end = `<button type="button" class="cbtn cend" data-act="callEnd" ${ph === 'ended' ? 'disabled' : ''}><span class="c">${ic('phone', 30, 'style="transform:rotate(135deg)"')}</span>종료</button>`;
+  $('#call').innerHTML = `<div class="callscr ${ph}" role="dialog" aria-modal="true" aria-label="${esc(pi.name)} 가상 통화">
+    <span class="calltag">가상 통화</span>
+    <div class="callwho"><span class="avatar" aria-hidden="true">${esc(pi.av)}</span><b>${esc(pi.name)}</b><span>${esc(pi.sub)}</span><span class="cstat" id="cstat">${status}</span></div>
+    <div class="waves" aria-hidden="true" ${ph === 'talk' ? '' : 'style="visibility:hidden"'}><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="captions" id="captions" aria-live="polite">${call.shown.slice(-4).map(([w, t]) => capHTML(w, t)).join('')}</div>
+    ${ph === 'ringing'
+      ? `<div class="callbtns two">
+          <button type="button" class="cbtn cend" data-act="callDecline"><span class="c">${ic('phone', 30, 'style="transform:rotate(135deg)"')}</span>거절</button>
+          <button type="button" class="cbtn cacc" data-act="callAccept"><span class="c">${ic('phone', 30)}</span>받기</button>
+        </div>`
+      : `<div class="callbtns">
+          <button type="button" class="cbtn" data-act="callToggle" aria-pressed="false"><span class="c">${ic('mic', 26)}</span>음소거</button>
+          <button type="button" class="cbtn" data-act="callToggle" aria-pressed="false"><span class="c">${ic('keypad', 26)}</span>키패드</button>
+          <button type="button" class="cbtn" data-act="callToggle" aria-pressed="false"><span class="c">${ic('speaker', 26)}</span>스피커</button>
+          <span></span>${end}<span></span>
+        </div>`}
+  </div>`;
+}
+function stopCallTimers() { call.timers.forEach(t => { clearTimeout(t); clearInterval(t); }); call.timers = []; }
+function startCall(ctx) {
+  stopCallTimers(); hideBanner();
+  if (ui.sheetOpen) closeSim();
+  Object.assign(call, { on: true, ctx, shown: [], sec: 0, phase: ctx.dir === 'out' ? 'dialing' : 'ringing' });
+  $('#call').hidden = false;
+  renderCall();
+  setTimeout(() => { const b = $('#call .cacc') || $('#call .cend'); if (b) b.focus(); }, 40);
+  if (ctx.dir === 'out') call.timers.push(setTimeout(connectCall, 2200));
+  else { try { if (navigator.vibrate) navigator.vibrate([400, 200, 400, 200, 400]); } catch (e) { } }
+}
+function connectCall() {
+  stopCallTimers();
+  call.phase = 'talk'; call.t0 = Date.now();
+  renderCall();
+  call.timers.push(setInterval(() => { const s = $('#cstat'); if (s && call.phase === 'talk') s.textContent = fmtSec(Math.floor((Date.now() - call.t0) / 1000)); }, 500));
+  const lines = callScript(call.ctx);
+  lines.forEach(([w, t], i) => call.timers.push(setTimeout(() => {
+    call.shown.push([w, t]);
+    const box = $('#captions'); if (!box) return;
+    box.insertAdjacentHTML('beforeend', capHTML(w, t));
+    while (box.children.length > 4) box.removeChild(box.firstChild);
+  }, 900 + i * 2800)));
+  call.timers.push(setTimeout(endCall, 900 + lines.length * 2800 + 2600));
+}
+function endCall() {
+  if (!call.on || call.phase === 'ended') return;
+  const talked = call.phase === 'talk';
+  call.sec = talked ? Math.floor((Date.now() - call.t0) / 1000) : 0;
+  stopCallTimers();
+  call.phase = 'ended';
+  renderCall();
+  call.timers.push(setTimeout(() => { const after = call.ctx.after; closeCall(); if (talked && after) after(); }, 1100));
+}
+function closeCall() { stopCallTimers(); call.on = false; $('#call').hidden = true; $('#call').innerHTML = ''; }
+function declineCall() { closeCall(); toast('전화를 거절했어요.'); }
+/* 생활지원사가 어르신과 통화를 마치면, 들은 내용으로 기록 화면을 미리 채워요 */
+function afterElderCall(hid) {
+  const a = state.alerts.find(x => x.hid === hid && x.status === 'open');
+  if (!a || state.role !== 'worker') return null;
+  return () => {
+    const rid = REASON_FROM_CALL[a.type], r = REASONS[a.type].find(x => x.id === rid);
+    ui.detail = hid; ui.record = a.id;
+    ui.form = { aid: a.id, reason: rid, follow: r.f.slice(), memo: MEMO_FROM_CALL[a.type], notify: true };
+    renderScreen(); window.scrollTo(0, 0);
+    toast('통화 내용으로 이유를 미리 골라 뒀어요. 확인하고 기록해 주세요.');
+  };
+}
+function callElder(hid) { startCall({ dir: 'out', peer: 'elder', hid, after: afterElderCall(hid) }); }
+function callFrom(el) {
+  const hid = +el.dataset.hid, peer = el.dataset.to || 'elder';
+  if (peer === 'elder') callElder(hid);
+  else startCall({ dir: 'out', peer, hid });
+}
+function incomingCall(hid) {
+  if (state.role === 'admin') return;
+  const peer = state.role === 'guardian' ? 'worker' : 'elder';
+  startCall({ dir: 'in', peer, hid, after: peer === 'elder' ? afterElderCall(hid) : null });
 }
 
 /* ---------- 이벤트 ---------- */
@@ -1161,7 +1339,12 @@ document.addEventListener('click', e => {
   else if (act === 'detail') { ui.detail = +el.dataset.hid; ui.record = null; renderScreen(); window.scrollTo(0, 0); }
   else if (act === 'back') { if (ui.record != null) { ui.record = null; } else ui.detail = null; renderScreen(); window.scrollTo(0, 0); }
   else if (act === 'record') { ui.record = +el.dataset.aid; renderScreen(); window.scrollTo(0, 0); }
-  else if (act === 'call') toast(`시연이라 ${el.dataset.who}께 실제로 전화가 걸리지는 않아요.`);
+  else if (act === 'call') callFrom(el);
+  else if (act === 'callEnd') endCall();
+  else if (act === 'callAccept') connectCall();
+  else if (act === 'callDecline') declineCall();
+  else if (act === 'callToggle') el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  else if (act === 'incoming') incomingCall(state.sel);
   else if (act === 'submitRecord') submitRecord();
   else if (act === 'tourGo') tourGo();
   else if (act === 'tourSkip') endTour();
@@ -1182,6 +1365,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g.pin')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  if (e.key === 'Escape' && call.on) { if (call.phase === 'ringing') declineCall(); else endCall(); return; }
   if (e.key === 'Escape' && ui.sheetOpen) closeSim();
 });
 document.addEventListener('change', e => {
