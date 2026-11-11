@@ -221,6 +221,22 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
 .coach .skip{min-height:44px;padding:0 4px;border:0;background:transparent;color:var(--sub);font-size:14px;font-weight:500}
 .coach .btn{margin-top:4px}
 .coach-scrim{position:fixed;inset:0;background:var(--scrim);z-index:29}
+.start{position:fixed;inset:0;z-index:55;background:var(--bg);overflow:auto;display:flex;justify-content:center}
+.start[hidden],.fabhint[hidden]{display:none}
+.start .in{width:100%;max-width:440px;min-height:100%;padding:calc(env(safe-area-inset-top,0px) + 32px) 24px calc(env(safe-area-inset-bottom,0px) + 32px);display:flex;flex-direction:column;justify-content:center;gap:22px}
+.start .logo{width:64px;height:64px;border-radius:18px;background:#1B2430;display:flex;align-items:center;justify-content:center;position:relative}
+.start .logo i{position:absolute;left:28px;top:33px;width:9px;height:9px;border-radius:5px;background:#F0A65E}
+.start h1{font-size:32px;line-height:40px}
+.start .lead{margin:0;font-size:16px;line-height:25px;color:var(--sub)}
+.choice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border-radius:18px;padding:18px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.choice.pri{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.choice b{display:block;font-size:19px;line-height:27px;font-weight:700}
+.choice .d{display:block;font-size:14px;line-height:21px;color:var(--sub);margin-top:2px}
+.choice.pri .d{color:inherit;opacity:.82}
+.choice svg{flex:none;margin-left:auto}
+.fabhint{position:fixed;z-index:26;right:max(16px,calc(50% - 224px));bottom:calc(136px + env(safe-area-inset-bottom,0px));max-width:230px;background:var(--btn);color:var(--btn-ink);border-radius:14px;padding:10px 14px;font-size:14px;line-height:20px;box-shadow:0 8px 20px var(--shadow)}
+.fabhint.low{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+.fabhint::after{content:"";position:absolute;right:28px;bottom:-6px;width:12px;height:12px;background:var(--btn);transform:rotate(45deg)}
 .app.touring{padding-bottom:calc(320px + env(safe-area-inset-bottom,0px))}
 .app.touring ~ .toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 16px);transform:translate(-50%,-20px)}
 .app.touring ~ .toast.show{transform:translate(-50%,0)}
@@ -270,6 +286,8 @@ tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
 <div class="callwrap" id="call" hidden></div>
 <div class="coach-scrim" id="coachScrim" hidden></div>
 <div class="coach" id="coach" hidden></div>
+<div class="start" id="start" hidden></div>
+<div class="fabhint" id="fabhint" role="status" hidden></div>
 
 <script>
 'use strict';
@@ -432,7 +450,7 @@ function ic(name, size = 20, extra = '') { return `<svg width="${size}" height="
    상태
    ============================================================== */
 let state = null;
-const ui = { tab: 'today', detail: null, record: null, form: null, ff: false, sheetOpen: false, tour: null };
+const ui = { tab: 'today', detail: null, record: null, form: null, ff: false, sheetOpen: false, tour: null, start: false, hint: false };
 
 function newState() {
   const rand = rng(20270114);
@@ -979,9 +997,10 @@ function renderScreen() {
   if (openDetails) { const d = scr.querySelector('details'); if (d) d.open = true; }
   renderTabbar();
   $('#fab').classList.toggle('low', role !== 'worker');
-  $('#fab').hidden = (role === 'worker' && ui.record != null) || ui.tour != null;
+  $('#fab').hidden = (role === 'worker' && ui.record != null) || ui.tour != null || ui.start;
   tourCheck();
   renderCoach();
+  renderStart();
   app.classList.toggle('touring', ui.tour != null);
 }
 function renderTabbar() {
@@ -1090,11 +1109,11 @@ function renderSheet() {
       </div>
       <p class="muted">흐르게 하면 실제 1초에 가상 1분씩 지나요.</p>
     </div>
-    <button type="button" class="btn pri" data-act="tourStart">1분 체험 다시 하기</button>
+    <button type="button" class="btn pri" data-act="tourStart">안내를 따라 1분 체험하기</button>
     <button type="button" class="btn sec" data-act="reset">${ic('reset', 18)}처음 상태로 되돌리기</button>
   </div>`;
 }
-function openSim() { ui.sheetOpen = true; renderSheet(); $('#sheet').hidden = false; setTimeout(() => { const f = $('#sheet .iconbtn'); if (f) f.focus(); }, 30); }
+function openSim() { ui.sheetOpen = true; ui.hint = false; $('#fabhint').hidden = true; renderSheet(); $('#sheet').hidden = false; setTimeout(() => { const f = $('#sheet .iconbtn'); if (f) f.focus(); }, 30); }
 function closeSim() { ui.sheetOpen = false; $('#sheet').hidden = true; $('#fab').focus(); }
 
 function applyScenario(kind) {
@@ -1138,6 +1157,31 @@ const TOUR = [
   { t: '보호자는 이렇게 봐요', b: '알림부터 통화 결과까지 오늘 소식에 차례로 쌓여요. 마지막으로 지자체 화면을 볼까요?', go: '지자체 화면 보기' },
   { t: '동네별로 모아 봐요', b: '어느 동네에서 어떤 이유로 집이 추운지 모이니까, 바우처 안내를 어디부터 할지 정할 수 있어요. 체험은 여기까지예요.', go: '체험 끝내기' }
 ];
+/* ---------- 첫 화면: 체험하기와 직접 보기 중에 골라요 ---------- */
+function renderStart() {
+  const el = $('#start'), hint = $('#fabhint');
+  const showHint = ui.hint && !ui.start && !ui.tour && !$('#fab').hidden && !ui.sheetOpen;
+  hint.hidden = !showHint;
+  hint.classList.toggle('low', state.role !== 'worker');
+  if (showHint) hint.textContent = '여기서 보일러 끄기 같은 상황을 직접 만들어 보세요.';
+  if (!ui.start) { if (!el.hidden) { el.hidden = true; el.innerHTML = ''; } return; }
+  if (!el.hidden) return;
+  el.hidden = false;
+  el.innerHTML = `<div class="in" role="dialog" aria-modal="true" aria-labelledby="starttitle">
+    <span class="tag" style="align-self:flex-start">가상 센서로 움직이는 시제품</span>
+    <span class="logo" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11l7.5-6 7.5 6v8.5h-15z"/></svg><i></i></span>
+    <div style="display:flex;flex-direction:column;gap:8px"><h1 id="starttitle">온기 순찰대</h1>
+      <p class="lead">영동의 등유 난방 독거노인 가구에서 추운 집을 찾고, 왜 추운지까지 알려 주는 돌봄 앱이에요.</p></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button type="button" class="choice pri" data-act="startTour"><span><b>체험하기</b><span class="d">안내를 따라 알림부터 통화, 기록까지 1분 만에 해 봐요.</span></span>${ic('chev', 22)}</button>
+      <button type="button" class="choice" data-act="startFree"><span><b>직접 보기</b><span class="d">안내 없이 자유롭게 둘러보고, 시연 버튼으로 상황을 직접 만들어요.</span></span>${ic('chev', 22)}</button>
+    </div>
+    <p class="muted">실제 센서 대신 가상 값으로 움직이고, 전화도 가상 통화예요.</p>
+  </div>`;
+  setTimeout(() => { const b = $('#start .choice'); if (b) b.focus(); }, 40);
+}
+function hintLater() { setTimeout(() => { ui.hint = false; renderStart(); }, 12000); }
+
 function startTour(fresh) {
   if (fresh) { boot(); hideBanner(); }
   ui.tab = 'today'; ui.detail = null; ui.record = null; ui.form = null;
@@ -1145,7 +1189,7 @@ function startTour(fresh) {
   ui.tour = { step: fresh ? 1 : 0 };
   renderScreen(); window.scrollTo(0, 0);
 }
-function endTour() { ui.tour = null; state.tourSeen = true; save(); renderScreen(); }
+function endTour() { ui.tour = null; state.tourSeen = true; ui.hint = true; save(); renderScreen(); hintLater(); }
 function tourAlert() { return state.alerts.find(a => a.hid === 0 && a.type === 'boiler_off'); }
 function tourCheck() {
   const T = ui.tour; if (!T) return;
@@ -1349,6 +1393,8 @@ document.addEventListener('click', e => {
   else if (act === 'tourGo') tourGo();
   else if (act === 'tourSkip') endTour();
   else if (act === 'tourStart') { closeSim(); startTour(true); }
+  else if (act === 'startTour') { ui.start = false; startTour(true); }
+  else if (act === 'startFree') { ui.start = false; state.tourSeen = true; ui.hint = true; save(); renderScreen(); window.scrollTo(0, 0); hintLater(); }
   else if (act === 'bannerOpen') {
     hideBanner();
     const hid = +el.dataset.hid;
@@ -1361,7 +1407,7 @@ document.addEventListener('click', e => {
   else if (act === 'scen') applyScenario(el.dataset.scen);
   else if (act === 'play') { state.playing = !state.playing; save(); renderSheet(); }
   else if (act === 'ffwd') { closeSim(); fastForward(+el.dataset.min, null); }
-  else if (act === 'reset') { boot(); ui.detail = null; ui.record = null; ui.form = null; ui.tab = 'today'; ui.tour = { step: 0 }; hideBanner(); closeSim(); renderScreen(); window.scrollTo(0, 0); }
+  else if (act === 'reset') { boot(); ui.detail = null; ui.record = null; ui.form = null; ui.tab = 'today'; ui.tour = null; ui.hint = false; ui.start = true; hideBanner(); closeSim(); renderScreen(); window.scrollTo(0, 0); }
 });
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g.pin')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
@@ -1392,7 +1438,7 @@ state = load();
 if (!state) boot();
 const tok = (location.hash || '').slice(1);
 if (tok === 'guardian' || tok === 'admin' || tok === 'worker') state.role = tok;
-if (!state.tourSeen && !tok) ui.tour = { step: 0 };
+if (!state.tourSeen && !tok) ui.start = true;
 renderScreen();
 /* 눌러 보는 중에 화면이 바뀌지 않도록, 손가락이 닿아 있을 땐 다시 그리지 않아요 */
 let tickN = 0, pressing = false, pending = false;
